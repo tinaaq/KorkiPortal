@@ -1,0 +1,111 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  role      Role
+  tutorProfile   TutorProfile?
+  studentProfile StudentProfile?
+  createdAt DateTime @default(now())
+}
+
+model TutorProfile {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  user      User     @relation(fields: [userId], references: [id])
+  name      String
+  subjects  String[]
+  description String?
+  meetingLink String?
+  photoUrl  String? // zdjęcie korepetytora
+  availabilities Availability[]
+  bookings  Booking[]
+  notes     Note[]
+  flashcards Flashcard[]
+}
+
+model StudentProfile {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @unique
+  user      User     @relation(fields: [userId], references: [id])
+  name      String
+  grade     String?
+  bookings  Booking[]
+  notes     Note[]
+  flashcardAssignments FlashcardAssignment[]
+}
+
+model Availability {
+  id        Int      @id @default(autoincrement())
+  tutorId   Int
+  tutor     TutorProfile @relation(fields: [tutorId], references: [id])
+  startTime DateTime
+  endTime   DateTime
+}
+
+model Booking {
+  id        Int      @id @default(autoincrement())
+  tutorId   Int
+  studentId Int
+  tutor     TutorProfile @relation(fields: [tutorId], references: [id])
+  student   StudentProfile @relation(fields: [studentId], references: [id])
+  startTime DateTime
+  endTime   DateTime
+  status    BookingStatus @default(PENDING)
+
+  @@unique([tutorId, startTime, endTime]) // blokada podwójnych rezerwacji
+}
+
+model Note {
+  id        Int      @id @default(autoincrement())
+  tutorId   Int
+  studentId Int
+  tutor     TutorProfile @relation(fields: [tutorId], references: [id])
+  student   StudentProfile @relation(fields: [studentId], references: [id])
+  content   String
+  updatedAt DateTime @updatedAt
+}
+
+model Flashcard {
+  id        Int      @id @default(autoincrement())
+  tutorId   Int
+  tutor     TutorProfile @relation(fields: [tutorId], references: [id])
+  question  String
+  answer    String
+  updatedAt DateTime @updatedAt
+  assignments FlashcardAssignment[]
+}
+
+model FlashcardAssignment {
+  id          Int      @id @default(autoincrement())
+  flashcardId Int
+  studentId   Int
+  flashcard   Flashcard @relation(fields: [flashcardId], references: [id])
+  student     StudentProfile @relation(fields: [studentId], references: [id])
+}
+
+enum Role {
+  TUTOR
+  STUDENT
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
