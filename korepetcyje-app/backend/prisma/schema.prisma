@@ -51,25 +51,33 @@ model StudentProfile {
 }
 
 model Availability {
-  id        Int      @id @default(autoincrement())
+  id        Int    @id @default(autoincrement())
   tutorId   Int
-  tutor     TutorProfile @relation(fields: [tutorId], references: [id])
-  startTime DateTime
-  endTime   DateTime
+  dayOfWeek Int    // 0 = Sunday ... 6 = Saturday
+  startTime String // "16:00"
+  endTime   String // "20:00"
+
+  tutor TutorProfile @relation(fields: [tutorId], references: [id])
+
+  @@unique([tutorId, dayOfWeek, startTime, endTime])
 }
+
 
 model Booking {
   id        Int      @id @default(autoincrement())
   tutorId   Int
   studentId Int
-  tutor     TutorProfile @relation(fields: [tutorId], references: [id])
-  student   StudentProfile @relation(fields: [studentId], references: [id])
-  startTime DateTime
-  endTime   DateTime
+
+  startAt   DateTime
+  endAt     DateTime
   status    BookingStatus @default(PENDING)
 
-  @@unique([tutorId, startTime, endTime]) // blokada podwójnych rezerwacji
+  tutor     TutorProfile   @relation(fields: [tutorId], references: [id])
+  student   StudentProfile @relation(fields: [studentId], references: [id])
+
+  @@index([tutorId, startAt])
 }
+
 
 model Note {
   id        Int      @id @default(autoincrement())
