@@ -5,9 +5,9 @@ import jwt from 'jsonwebtoken';
 
 export const registerUser = async (req, res) => {
   try {
-    const { email, password, role, name } = req.body;
+    const { email, password, role, firstName, lastName } = req.body; 
 
-    if (!email || !password || !role || !name) {
+    if (!email || !password || !role ||!firstName || !lastName ) { 
       return res.status(400).json({ error: 'Wszystkie pola są wymagane' });
     }
 
@@ -31,7 +31,9 @@ export const registerUser = async (req, res) => {
       await prisma.tutorProfile.create({
         data: {
           userId: user.id,
-          name,
+          firstName,
+          lastName: lastName,
+          mode: 'ONLINE', // domyślnie
           subjects: [],
         },
       });
@@ -39,7 +41,9 @@ export const registerUser = async (req, res) => {
       await prisma.studentProfile.create({
         data: {
           userId: user.id,
-          name,
+          firstName,
+          lastName: lastName
+
         },
       });
     }

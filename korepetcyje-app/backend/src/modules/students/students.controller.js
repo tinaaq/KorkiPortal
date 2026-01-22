@@ -19,13 +19,27 @@ export const getStudentProfile = async (req, res) => {
 
 export const updateStudentProfile = async (req, res) => {
   try {
-    const { name, grade } = req.body;
+    const { firstName, lastName, city, address, grade } = req.body;
+
+    
+    if (!firstName) {
+      return res.status(400).json({ error: 'Imię jest wymagane' });
+    }
+
+    if (!lastName) {
+      return res.status(400).json({ error: 'Nazwisko jest wymagane' });
+    }
 
     const updatedProfile = await prisma.studentProfile.update({
       where: { userId: req.user.userId },
       data: {
-        name,
-        grade,
+
+        firstName,
+        lastName,
+        city: city || null,
+        address: address || null,
+        grade: grade || null
+
       },
     });
 

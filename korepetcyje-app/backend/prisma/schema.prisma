@@ -28,8 +28,14 @@ model TutorProfile {
   id        Int      @id @default(autoincrement())
   userId    Int      @unique
   user      User     @relation(fields: [userId], references: [id])
-  name      String
-  subjects  String[]
+
+  firstName   String
+  lastName    String
+  city        String?
+  address     String?
+  mode        Mode
+  subjects    Json
+  
   description String?
   meetingLink String?
   photoUrl  String? // zdjęcie korepetytora
@@ -44,7 +50,12 @@ model StudentProfile {
   id        Int      @id @default(autoincrement())
   userId    Int      @unique
   user      User     @relation(fields: [userId], references: [id])
-  name      String
+
+  firstName String
+  lastName  String
+  city      String?
+  address   String?
+
   grade     String?
   bookings  Booking[]
   notes     Note[]
@@ -64,11 +75,14 @@ model Availability {
   @@unique([tutorId, dayOfWeek, startTime, endTime])
 }
 
-
 model Booking {
   id        Int      @id @default(autoincrement())
   tutorId   Int
   studentId Int
+
+  subject   String
+  mode      Mode
+  address   String? // jeśli OFFLINE
 
   startAt   DateTime
   endAt     DateTime
@@ -79,6 +93,7 @@ model Booking {
 
   @@index([tutorId, startAt])
 }
+
 
 
 model Note {
@@ -155,4 +170,11 @@ enum BookingStatus {
   PENDING
   CONFIRMED
   CANCELLED
+}
+
+
+enum Mode {
+  ONLINE
+  OFFLINE
+  BOTH
 }

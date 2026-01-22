@@ -9,9 +9,9 @@ const LESSON_MINUTES = 30;
 ========================= */
 export const createBooking = async (req, res) => {
   try {
-    const { tutorId, startAt } = req.body;
+    const { tutorId, startAt, subject, mode, addressOption } = req.body;
 
-    if (!tutorId || !startAt) {
+    if (!tutorId || !startAt || !subject || !mode) {
       return res.status(400).json({ error: 'Brak danych' });
     }
 
@@ -29,6 +29,14 @@ export const createBooking = async (req, res) => {
 
     if (!studentProfile) {
       return res.status(404).json({ error: 'Brak profilu ucznia' });
+    }
+   
+    // Pobierz profil korepetytora
+    const tutorProfile = await prisma.tutorProfile.findUnique({
+      where: { id: Number(tutorId) },
+    });
+    if (!tutorProfile) {
+      return res.status(404).json({ error: 'Brak profilu korepetytora' });
     }
 
     // czy slot pasuje do availability
@@ -63,10 +71,49 @@ export const createBooking = async (req, res) => {
         throw new Error('SLOT_TAKEN');
       }
 
+      if (mode === 'OFFLINE' || mode === 'BOTH') {
+        if (!addressOption) {
+          return res.status(400).json({ error: 'Wybierz adres zajęć' });
+        }
+      }
+
+      let finalAddress = null;
+
+      // ONLINE → zawsze link do spotkania
+      if (mode === 'ONLINE') {
+        finalAddress = tutorProfile.meetingLink;
+      }
+
+      // OFFLINE → zależy od wyboru ucznia
+      else if (mode === 'OFFLINE') {
+        if (addressOption === 'student') {
+          finalAddress = studentProfile.address;
+        } else if (addressOption === 'tutor') {
+          finalAddress = tutorProfile.address;
+        } else {
+          return res.status(400).json({ error: 'Nieprawidłowa opcja adresu' });
+        }
+      }
+
+      // BOTH → student musi wybrać jedną z dwóch opcji
+      else if (mode === 'BOTH') {
+        if (addressOption === 'student') {
+          finalAddress = studentProfile.address;
+        } else if (addressOption === 'tutor') {
+          finalAddress = tutorProfile.address;
+        } else {
+          return res.status(400).json({ error: 'Nieprawidłowa opcja adresu' });
+        }
+      }
+
+
       return tx.booking.create({
         data: {
           tutorId: Number(tutorId),
-          studentId: studentProfile.id,
+          studentId: studentProfile.id,          
+          subject,
+          mode,
+          address: finalAddress,
           startAt: start,
           endAt: end,
           status: 'CONFIRMED',
@@ -172,7 +219,7 @@ export const cancelBooking = async (req, res) => {
     // 👉 EMAIL TYLKO GDY TUTOR ANULUJE
     if (req.user.role === 'TUTOR') {
       const studentEmail = booking.student.user.email;
-      const tutorName = booking.tutor.name;
+      const tutorName = booking.tutor.firstName;
 
       sendCancellationEmail(
         studentEmail,
