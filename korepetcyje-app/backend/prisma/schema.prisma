@@ -37,6 +37,7 @@ model TutorProfile {
   bookings  Booking[]
   notes     Note[]
   flashcards Flashcard[]
+  flashcardSets FlashcardSet[]
 }
 
 model StudentProfile {
@@ -48,6 +49,7 @@ model StudentProfile {
   bookings  Booking[]
   notes     Note[]
   flashcardAssignments FlashcardAssignment[]
+  flashcardSetAssignments FlashcardSetAssignment[]
 }
 
 model Availability {
@@ -83,29 +85,66 @@ model Note {
   id        Int      @id @default(autoincrement())
   tutorId   Int
   studentId Int
-  tutor     TutorProfile @relation(fields: [tutorId], references: [id])
-  student   StudentProfile @relation(fields: [studentId], references: [id])
   content   String
+
+  createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  tutor   TutorProfile   @relation(fields: [tutorId], references: [id])
+  student StudentProfile @relation(fields: [studentId], references: [id])
+
+  @@index([tutorId, studentId])
+}
+
+model FlashcardSet {
+  id        Int      @id @default(autoincrement())
+  tutorId   Int
+  name      String
+
+  createdAt DateTime @default(now())
+
+  tutor      TutorProfile @relation(fields: [tutorId], references: [id])
+  flashcards Flashcard[]
+  assignments FlashcardSetAssignment[]
 }
 
 model Flashcard {
   id        Int      @id @default(autoincrement())
   tutorId   Int
-  tutor     TutorProfile @relation(fields: [tutorId], references: [id])
-  question  String
-  answer    String
-  updatedAt DateTime @updatedAt
+  setId     Int
+  front     String
+  back      String
+
+  createdAt DateTime @default(now())
+
+  tutor TutorProfile @relation(fields: [tutorId], references: [id])
+  set   FlashcardSet @relation(fields: [setId], references: [id])
+
   assignments FlashcardAssignment[]
 }
 
 model FlashcardAssignment {
-  id          Int      @id @default(autoincrement())
+  id          Int @id @default(autoincrement())
   flashcardId Int
   studentId   Int
-  flashcard   Flashcard @relation(fields: [flashcardId], references: [id])
-  student     StudentProfile @relation(fields: [studentId], references: [id])
+
+  flashcard Flashcard @relation(fields: [flashcardId], references: [id])
+  student   StudentProfile @relation(fields: [studentId], references: [id])
+
+  @@unique([flashcardId, studentId])
 }
+
+model FlashcardSetAssignment {
+  id        Int @id @default(autoincrement())
+  setId     Int
+  studentId Int
+
+  set     FlashcardSet   @relation(fields: [setId], references: [id])
+  student StudentProfile @relation(fields: [studentId], references: [id])
+
+  @@unique([setId, studentId])
+}
+
 
 enum Role {
   TUTOR

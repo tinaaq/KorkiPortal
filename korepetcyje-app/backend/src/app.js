@@ -11,6 +11,8 @@ import studentsRoutes from './modules/students/students.routes.js';
 import calendarRoutes from './modules/calendar/calendar.routes.js';
 import bookingsRoutes from './modules/bookings/bookings.routes.js';
 
+import noteRoutes from './modules/notes/notes.routes.js';
+import flashcardRoutes from './modules/flashcards/flashcards.routes.js';
 
 
 dotenv.config();
@@ -27,7 +29,9 @@ app.use('/api/students', studentsRoutes);
 
 app.use('/api/calendar', calendarRoutes);
 
+app.use('/api/notes', noteRoutes);
 
+app.use('/api/flashcards', flashcardRoutes);
 
 app.get('/', async (req, res) => {
   try {
