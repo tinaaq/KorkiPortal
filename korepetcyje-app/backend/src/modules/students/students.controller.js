@@ -4,7 +4,7 @@ import prisma from '../../config/db.js';
 export const getStudentProfile = async (req, res) => {
   try {
     const studentProfile = await prisma.studentProfile.findUnique({
-      where: { userId: req.user.userId },
+      where: { userId: req.user.id },
     });
 
     if (!studentProfile) {
@@ -19,7 +19,12 @@ export const getStudentProfile = async (req, res) => {
 
 export const updateStudentProfile = async (req, res) => {
   try {
-    const { firstName, lastName, city, address, grade } = req.body;
+   
+    if (!req.user?.id) {
+      return res.status(401).json({ error: 'Brak ID użytkownika w tokenie' });
+    }
+
+    const { firstName, lastName, city, address, grade, school } = req.body;
 
     
     if (!firstName) {
@@ -31,14 +36,15 @@ export const updateStudentProfile = async (req, res) => {
     }
 
     const updatedProfile = await prisma.studentProfile.update({
-      where: { userId: req.user.userId },
+      where: { userId: req.user.id },
       data: {
 
         firstName,
         lastName,
         city: city || null,
         address: address || null,
-        grade: grade || null
+        grade: grade || null,
+        school: school || null,
 
       },
     });

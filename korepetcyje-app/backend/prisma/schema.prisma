@@ -34,15 +34,18 @@ model TutorProfile {
   city        String?
   address     String?
   mode        Mode
-  subjects    Json
+  subjects    TutorSubject[]
   
   description String?
   meetingLink String?
-  photoUrl  String? // zdjęcie korepetytora
+  photoUrl  String?
+
   availabilities Availability[]
+  unavailabilities TutorUnavailability[]
+
   bookings  Booking[]
   notes     Note[]
-  flashcards Flashcard[]
+
   flashcardSets FlashcardSet[]
 }
 
@@ -55,13 +58,34 @@ model StudentProfile {
   lastName  String
   city      String?
   address   String?
-
   grade     String?
+  school    String?
+
   bookings  Booking[]
   notes     Note[]
-  flashcardAssignments FlashcardAssignment[]
+
   flashcardSetAssignments FlashcardSetAssignment[]
 }
+
+model Subject {
+  id   Int    @id @default(autoincrement())
+  name String @unique
+
+  tutors TutorSubject[]
+}
+
+model TutorSubject {
+  tutorId   Int
+  subjectId Int
+
+  priceInfo String
+
+  tutor   TutorProfile @relation(fields: [tutorId], references: [id])
+  subject Subject      @relation(fields: [subjectId], references: [id])
+
+  @@id([tutorId, subjectId])
+}
+
 
 model Availability {
   id        Int    @id @default(autoincrement())
@@ -73,27 +97,45 @@ model Availability {
   tutor TutorProfile @relation(fields: [tutorId], references: [id])
 
   @@unique([tutorId, dayOfWeek, startTime, endTime])
+  
+  @@index([tutorId, dayOfWeek])
 }
 
-model Booking {
-  id        Int      @id @default(autoincrement())
-  tutorId   Int
-  studentId Int
+model TutorUnavailability {
+  id      Int @id @default(autoincrement())
+  tutorId Int
 
-  subject   String
-  mode      Mode
-  address   String? // jeśli OFFLINE
+  startAt DateTime
+  endAt   DateTime
+  reason  String?
 
-  startAt   DateTime
-  endAt     DateTime
-  status    BookingStatus @default(PENDING)
-
-  tutor     TutorProfile   @relation(fields: [tutorId], references: [id])
-  student   StudentProfile @relation(fields: [studentId], references: [id])
+  tutor TutorProfile @relation(fields: [tutorId], references: [id])
 
   @@index([tutorId, startAt])
 }
 
+
+model Booking {
+  id        Int @id @default(autoincrement())
+  tutorId   Int
+  studentId Int
+  subjectId Int
+
+  mode      Mode
+  location  LessonLocation?
+  address   String?
+
+  startAt DateTime
+  endAt   DateTime
+
+  status BookingStatus @default(PENDING)
+
+  tutor   TutorProfile   @relation(fields: [tutorId], references: [id])
+  student StudentProfile @relation(fields: [studentId], references: [id])
+
+  @@index([tutorId, startAt])
+  @@index([studentId, startAt])
+}
 
 
 model Note {
@@ -125,39 +167,25 @@ model FlashcardSet {
 
 model Flashcard {
   id        Int      @id @default(autoincrement())
-  tutorId   Int
   setId     Int
   front     String
   back      String
 
   createdAt DateTime @default(now())
 
-  tutor TutorProfile @relation(fields: [tutorId], references: [id])
   set   FlashcardSet @relation(fields: [setId], references: [id])
 
-  assignments FlashcardAssignment[]
-}
-
-model FlashcardAssignment {
-  id          Int @id @default(autoincrement())
-  flashcardId Int
-  studentId   Int
-
-  flashcard Flashcard @relation(fields: [flashcardId], references: [id])
-  student   StudentProfile @relation(fields: [studentId], references: [id])
-
-  @@unique([flashcardId, studentId])
+  @@index([setId])
 }
 
 model FlashcardSetAssignment {
-  id        Int @id @default(autoincrement())
   setId     Int
   studentId Int
 
   set     FlashcardSet   @relation(fields: [setId], references: [id])
   student StudentProfile @relation(fields: [studentId], references: [id])
 
-  @@unique([setId, studentId])
+  @@id([setId, studentId])
 }
 
 
@@ -177,4 +205,9 @@ enum Mode {
   ONLINE
   OFFLINE
   BOTH
+}
+
+enum LessonLocation {
+  AT_STUDENT
+  AT_TUTOR
 }

@@ -2,18 +2,12 @@ import prisma from '../../config/db.js';
 
 const LESSON_MINUTES = 30;
 
-/* =========================
-   ADD AVAILABILITY (TUTOR)
-========================= */
 export const addAvailability = async (req, res) => {
   try {
     const { dayOfWeek, startTime, endTime } = req.body;
 
     if (
-      dayOfWeek === undefined ||
-      !startTime ||
-      !endTime
-    ) {
+      dayOfWeek === undefined || !startTime || !endTime ) {
       return res.status(400).json({ error: 'Brak danych' });
     }
 
@@ -37,7 +31,7 @@ export const addAvailability = async (req, res) => {
 
 
     const tutorProfile = await prisma.tutorProfile.findUnique({
-      where: { userId: req.user.userId },
+      where: { userId: req.user.id },
     });
 
     if (!tutorProfile) {
@@ -75,14 +69,16 @@ export const addAvailability = async (req, res) => {
   }
 };
 
-/* =========================
-   GET MY AVAILABILITIES
-========================= */
+
 export const getMyAvailabilities = async (req, res) => {
   try {
     const tutorProfile = await prisma.tutorProfile.findUnique({
-      where: { userId: req.user.userId },
+      where: { userId: req.user.id },
     });
+   
+    if (!tutorProfile) {
+      return res.status(404).json({ error: 'Brak profilu tutora' });
+    }
 
     const availabilities = await prisma.availability.findMany({
       where: { tutorId: tutorProfile.id },
@@ -95,20 +91,34 @@ export const getMyAvailabilities = async (req, res) => {
   }
 };
 
-/* =========================
-   GET TUTOR FREE SLOTS
-========================= */
+
 export const getTutorSlots = async (req, res) => {
   try {
-    const tutorId = Number(req.params.tutorId);
+
     const { from, to } = req.query;
+    const tutorId = Number(req.params.tutorId);
+
+    if (!tutorId || Number.isNaN(tutorId)) {
+      return res.status(400).json({ error: 'Nieprawidłowy tutorId' });
+    }
 
     if (!from || !to) {
       return res.status(400).json({ error: 'Brak zakresu dat' });
     }
+    // const tutorProfile = await prisma.tutorProfile.findUnique({ 
+    //   where: { userId: req.user.userId }, }); 
+    //const tutorId = tutorProfile.id;
 
     const fromDate = new Date(from);
     const toDate = new Date(to);
+
+    if (isNaN(fromDate.getTime()) || isNaN(toDate.getTime())) {
+      return res.status(400).json({ error: 'Nieprawidłowe daty' });
+    }
+
+    if (fromDate > toDate) {
+      return res.status(400).json({ error: 'from musi być <= to' });
+    }
 
     const availabilities = await prisma.availability.findMany({
       where: { tutorId },
@@ -174,16 +184,22 @@ export const getTutorSlots = async (req, res) => {
   }
 };
 
-/* =========================
-   DELETE AVAILABILITY
-========================= */
+
 export const deleteAvailability = async (req, res) => {
   try {
     const id = Number(req.params.id);
+    
+    if (!id || Number.isNaN(id)) {
+      return res.status(400).json({ error: 'Nieprawidłowe id dostępności' });
+    }
 
     const tutorProfile = await prisma.tutorProfile.findUnique({
-      where: { userId: req.user.userId },
+      where: { userId: req.user.id },
     });
+
+   if (!tutorProfile) {
+      return res.status(404).json({ error: 'Brak profilu tutora' });
+    }
 
     const availability = await prisma.availability.findUnique({
       where: { id },
@@ -199,18 +215,21 @@ export const deleteAvailability = async (req, res) => {
 
     res.json({ success: true });
   } catch (e) {
+    console.error(e);
     res.status(500).json({ error: 'Błąd serwera' });
   }
 };
 
-/* =========================
-   AVAILABILITY AS EVENTS
-========================= */
+
 export const getAvailabilityEvents = async (req, res) => {
   try {
     const tutorProfile = await prisma.tutorProfile.findUnique({
-      where: { userId: req.user.userId },
+      where: { userId: req.user.id },
     });
+
+    if (!tutorProfile) {
+      return res.status(404).json({ error: 'Brak profilu tutora' });
+    }
 
     const availabilities = await prisma.availability.findMany({
       where: { tutorId: tutorProfile.id },
@@ -226,6 +245,7 @@ export const getAvailabilityEvents = async (req, res) => {
 
     res.json(events);
   } catch (e) {
+    console.error('Błąd getAvailabilityEvents:', e);
     res.status(500).json({ error: 'Błąd serwera' });
   }
 };

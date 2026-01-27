@@ -12,7 +12,10 @@ export const authMiddleware = (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;
     next();
-  } catch (error) {
+  } catch (error) {   
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ error: 'Token wygasł' });
+    }
     res.status(401).json({ error: 'Nieprawidłowy token' });
   }
 };

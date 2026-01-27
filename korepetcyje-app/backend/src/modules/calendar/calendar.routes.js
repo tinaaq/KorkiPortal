@@ -3,12 +3,13 @@ import {
   addAvailability,
   getMyAvailabilities,
   getTutorSlots,
+  deleteAvailability,
+  getAvailabilityEvents,
+
 } from './calendar.controller.js';
 
 import { authMiddleware } from '../../middleware/authMiddleware.js';
 import { checkRole } from '../../middleware/roleMiddleware.js';
-import { deleteAvailability } from './calendar.controller.js';
-import { getAvailabilityEvents } from './calendar.controller.js';
 
 
 const router = Router();

@@ -4,7 +4,7 @@ import {
   getMyFlashcards,
   updateFlashcard,
   deleteFlashcard,
-  assignFlashcard,
+  //assignFlashcard,
   getStudentFlashcards,
   createSet,
   getMySets,
@@ -46,12 +46,12 @@ router.delete(
   deleteFlashcard
 );
 
-router.post(
-  '/:id/assign',
-  authMiddleware,
-  checkRole(['TUTOR']),
-  assignFlashcard
-);
+// router.post(
+//   '/:id/assign',
+//   authMiddleware,
+//   checkRole(['TUTOR']),
+//   assignFlashcard
+// );
 
 /* ===== STUDENT ===== */
 

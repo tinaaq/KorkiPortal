@@ -5,7 +5,12 @@ import prisma from '../../config/db.js';
 export const getTutorProfile = async (req, res) => {
   try {
     const tutorProfile = await prisma.tutorProfile.findUnique({
-      where: { userId: req.user.userId },
+      where: { userId: req.user.id },     
+      include: {
+        subjects: {
+          include: { subject: true }
+        }
+      }
     });
 
     if (!tutorProfile) {
@@ -29,8 +34,7 @@ export const updateTutorProfile = async (req, res) => {
       description,
       meetingLink,
       photoUrl,
-      mode,
-      subjects
+      mode
     } = req.body;
 
     // Walidacja podstawowa
@@ -39,17 +43,16 @@ export const updateTutorProfile = async (req, res) => {
     }
 
     const updatedProfile = await prisma.tutorProfile.update({
-      where: { userId: req.user.userId },
+      where: { userId: req.user.id},
       data: {
         firstName,
         lastName,
-        city,
-        address,
-        description,
-        meetingLink,
-        photoUrl,
-        mode,
-        subjects
+        city: city || null,
+        address: address || null,
+        description: description || null,
+        meetingLink: meetingLink || null,
+        photoUrl: photoUrl || null,
+        mode: mode ? mode.toUpperCase() : undefined
       },
     });
 
@@ -89,15 +92,28 @@ export const searchTutors = async (req, res) => {
             : {},
           subject
             ? {
+
                 subjects: {
-                  array_contains: [{ subject }] // Prisma JSON filter
+                  some: {
+                    subject: {
+                      name: { contains: subject, mode: 'insensitive' }
+                    }
+                  }
                 }
               }
+
             : {},
           city ? { city: { contains: city, mode: 'insensitive' } } : {},
           mode ? { OR: [ { mode: mode.toUpperCase() }, { mode: 'BOTH' } ] } : {}
         ]
       },
+      
+      include: {
+        subjects: {
+          include: { subject: true }
+        }
+      },
+
       skip,
       take,
       orderBy
@@ -119,13 +135,19 @@ export const searchTutors = async (req, res) => {
             : {},
           subject
             ? {
+
                 subjects: {
-                  array_contains: [{ subject }]
+                  some: {
+                    subject: {
+                      name: { contains: subject, mode: 'insensitive' }
+                    }
+                  }
                 }
+
               }
             : {},
           city ? { city: { contains: city, mode: 'insensitive' } } : {},
-          mode ? { mode: mode.toUpperCase() } : {}
+          mode ? { OR: [{ mode: mode.toUpperCase() }, { mode: 'BOTH' }] } : {}
         ]
       }
     });
@@ -143,4 +165,39 @@ export const searchTutors = async (req, res) => {
     res.status(500).json({ error: error.message });
   }
 };
+
+
+// Publiczny profil korepetytora po ID (id = TutorProfile.id)
+// tutors.controller.js
+export const getTutorPublicProfile = async (req, res) => {
+  try {
+    const { id } = req.params;
+    console.log('getTutorPublicProfile req.params.id =', id, 'URL =', req.originalUrl);
+
+    const tutorId = Number(id);
+
+    if (!id || Number.isNaN(tutorId) || tutorId <= 0) {
+      return res.status(400).json({ error: 'Nieprawidłowe ID korepetytora' });
+    }
+
+    const tutor = await prisma.tutorProfile.findUnique({
+      where: { id: tutorId },
+      include: {
+        subjects: {
+          include: { subject: true },
+        },
+      },
+    });
+
+    if (!tutor) {
+      return res.status(404).json({ error: 'Korepetytor nie znaleziony' });
+    }
+
+    res.json(tutor);
+  } catch (error) {
+    console.error('[getTutorPublicProfile] error:', error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
 

@@ -4,15 +4,12 @@ import { sendCancellationEmail } from '../notifications/email.service.js';
 
 const LESSON_MINUTES = 30;
 
-/* =========================
-   CREATE BOOKING (STUDENT)
-========================= */
 export const createBooking = async (req, res) => {
   try {
-    const { tutorId, startAt, subject, mode, addressOption } = req.body;
+    const { tutorId, startAt, subjectId, mode, addressOption } = req.body;
 
-    if (!tutorId || !startAt || !subject || !mode) {
-      return res.status(400).json({ error: 'Brak danych' });
+    if (!tutorId || !startAt || !subjectId || !mode) {
+      return res.status(400).json({ error: 'Brak wymaganych danych' });
     }
 
     const start = new Date(startAt);
@@ -24,7 +21,7 @@ export const createBooking = async (req, res) => {
     end.setMinutes(end.getMinutes() + LESSON_MINUTES);
 
     const studentProfile = await prisma.studentProfile.findUnique({
-      where: { userId: req.user.userId },
+      where: { userId: req.user.id },
     });
 
     if (!studentProfile) {
@@ -37,6 +34,26 @@ export const createBooking = async (req, res) => {
     });
     if (!tutorProfile) {
       return res.status(404).json({ error: 'Brak profilu korepetytora' });
+    }
+
+    // Sprawdź, czy korepetytor ma taki przedmiot
+    const tutorSubject = await prisma.tutorSubject.findUnique({
+      where: {
+        tutorId_subjectId: {
+          tutorId: tutorProfile.id,
+          subjectId: Number(subjectId),
+        },
+      },
+    });
+
+    if (!tutorSubject) {
+      return res.status(400).json({ error: 'Korepetytor nie prowadzi tego przedmiotu' });
+    }
+
+    // Normalizacja i walidacja mode
+    const normalizedMode = mode.toUpperCase();
+    if (!['ONLINE', 'OFFLINE', 'BOTH'].includes(normalizedMode)) {
+      return res.status(400).json({ error: 'Nieprawidłowy tryb zajęć' });
     }
 
     // czy slot pasuje do availability
@@ -71,48 +88,41 @@ export const createBooking = async (req, res) => {
         throw new Error('SLOT_TAKEN');
       }
 
-      if (mode === 'OFFLINE' || mode === 'BOTH') {
-        if (!addressOption) {
-          return res.status(400).json({ error: 'Wybierz adres zajęć' });
-        }
-      }
-
+    // Ustal location + address w zależności od trybu
       let finalAddress = null;
+      let location = null; // LessonLocation: AT_STUDENT / AT_TUTOR / null
 
-      // ONLINE → zawsze link do spotkania
-      if (mode === 'ONLINE') {
-        finalAddress = tutorProfile.meetingLink;
-      }
 
-      // OFFLINE → zależy od wyboru ucznia
-      else if (mode === 'OFFLINE') {
-        if (addressOption === 'student') {
-          finalAddress = studentProfile.address;
-        } else if (addressOption === 'tutor') {
-          finalAddress = tutorProfile.address;
-        } else {
-          return res.status(400).json({ error: 'Nieprawidłowa opcja adresu' });
-        }
-      }
+      if (normalizedMode === 'ONLINE') {
+            finalAddress = tutorProfile.meetingLink || null;
+          } else {
+            if (!addressOption) {
+              return res.status(400).json({ error: 'Wybierz adres zajęć' });
+            }
 
-      // BOTH → student musi wybrać jedną z dwóch opcji
-      else if (mode === 'BOTH') {
-        if (addressOption === 'student') {
-          finalAddress = studentProfile.address;
-        } else if (addressOption === 'tutor') {
-          finalAddress = tutorProfile.address;
-        } else {
-          return res.status(400).json({ error: 'Nieprawidłowa opcja adresu' });
-        }
-      }
+            if (addressOption === 'student') {
+              finalAddress = studentProfile.address || null;
+              location = 'AT_STUDENT';
+            } else if (addressOption === 'tutor') {
+              finalAddress = tutorProfile.address || null;
+              location = 'AT_TUTOR';
+            } else {
+              return res.status(400).json({ error: 'Nieprawidłowa opcja adresu' });
+            }
+
+            if (!finalAddress) {
+              return res.status(400).json({ error: 'Brak adresu dla wybranego miejsca zajęć' });
+            }
+          }
 
 
       return tx.booking.create({
         data: {
-          tutorId: Number(tutorId),
+          tutorId: tutorProfile.id,
           studentId: studentProfile.id,          
-          subject,
-          mode,
+          subjectId: Number(subjectId),
+          mode: normalizedMode,
+          location,
           address: finalAddress,
           startAt: start,
           endAt: end,
@@ -126,58 +136,95 @@ export const createBooking = async (req, res) => {
     if (e.message === 'SLOT_TAKEN') {
       return res.status(409).json({ error: 'Slot zajęty' });
     }
+    
+    if (e.message === 'NO_ADDRESS_OPTION') {
+      return res.status(400).json({ error: 'Wybierz adres zajęć' });
+    }
+    if (e.message === 'BAD_ADDRESS_OPTION') {
+      return res.status(400).json({ error: 'Nieprawidłowa opcja adresu' });
+    }
+    if (e.message === 'NO_ADDRESS_DEFINED') {
+      return res.status(400).json({ error: 'Brak adresu dla wybranego miejsca zajęć' });
+    }
+
     console.error(e);
     res.status(500).json({ error: 'Błąd serwera' });
   }
 };
 
-/* =========================
-   GET MY BOOKINGS
-========================= */
+
 export const getMyBookings = async (req, res) => {
   try {
     const now = new Date();
 
     if (req.user.role === 'STUDENT') {
       const student = await prisma.studentProfile.findUnique({
-        where: { userId: req.user.userId },
+        where: { userId: req.user.id },
       });
 
+    if (!student) {
+        return res.status(404).json({ error: 'Brak profilu ucznia' });
+      }
+
       const bookings = await prisma.booking.findMany({
+        
         where: { studentId: student.id },
-        include: { tutor: true },
-        orderBy: { startAt: 'asc' },
-      });
+                include: {
+                  tutor: {
+                    include: {
+                      user: true,
+                      subjects: { include: { subject: true } },
+                    },
+                  },
+                  //subject: true,
+                },
+                orderBy: { startAt: 'asc' },
+              });
+
 
       return res.json(bookings);
     }
 
     if (req.user.role === 'TUTOR') {
       const tutor = await prisma.tutorProfile.findUnique({
-        where: { userId: req.user.userId },
+        where: { userId: req.user.id },
       });
 
+      if (!tutor) {
+        return res.status(404).json({ error: 'Brak profilu korepetytora' });
+      }
+
       const bookings = await prisma.booking.findMany({
+        
         where: { tutorId: tutor.id },
-        include: { student: true },
-        orderBy: { startAt: 'asc' },
-      });
+                include: {
+                  student: {
+                    include: { user: true },
+                  },
+                  //subject: true,
+                },
+                orderBy: { startAt: 'asc' },
+              });
 
       return res.json(bookings);
     }
 
     res.status(403).json({ error: 'Brak dostępu' });
   } catch (e) {
+    console.error(e);
     res.status(500).json({ error: 'Błąd serwera' });
   }
 };
 
-/* =========================
-   CANCEL BOOKING
-========================= */
+
 export const cancelBooking = async (req, res) => {
   try {
     const id = Number(req.params.id);
+
+    
+    if (!id || Number.isNaN(id)) {
+      return res.status(400).json({ error: 'Nieprawidłowe ID rezerwacji' });
+    }
 
     const booking = await prisma.booking.findUnique({
       where: { id },
@@ -195,14 +242,14 @@ export const cancelBooking = async (req, res) => {
 
     if (req.user.role === 'STUDENT') {
       const student = await prisma.studentProfile.findUnique({
-        where: { userId: req.user.userId },
+        where: { userId: req.user.id },
       });
       if (student && student.id === booking.studentId) allowed = true;
     }
 
     if (req.user.role === 'TUTOR') {
       const tutor = await prisma.tutorProfile.findUnique({
-        where: { userId: req.user.userId },
+        where: { userId: req.user.id },
       });
       if (tutor && tutor.id === booking.tutorId) allowed = true;
     }
@@ -216,7 +263,7 @@ export const cancelBooking = async (req, res) => {
       data: { status: 'CANCELLED' },
     });
 
-    // 👉 EMAIL TYLKO GDY TUTOR ANULUJE
+    //  EMAIL TYLKO GDY TUTOR ANULUJE
     if (req.user.role === 'TUTOR') {
       const studentEmail = booking.student.user.email;
       const tutorName = booking.tutor.firstName;

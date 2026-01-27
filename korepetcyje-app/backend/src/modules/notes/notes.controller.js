@@ -1,8 +1,6 @@
 import prisma from '../../config/db.js';
 
-/* =========================
-   CREATE NOTE
-========================= */
+
 export const createNote = async (req, res) => {
   try {
     const { studentId, content } = req.body;
@@ -12,8 +10,20 @@ export const createNote = async (req, res) => {
     }
 
     const tutor = await prisma.tutorProfile.findUnique({
-      where: { userId: req.user.userId },
+      where: { userId: req.user.id },
     });
+   
+    if (!tutor) {
+      return res.status(404).json({ error: 'Brak profilu tutora' });
+    }
+
+    const student = await prisma.studentProfile.findUnique({
+      where: { id: Number(studentId) },
+    });
+
+    if (!student) {
+      return res.status(404).json({ error: 'Nie znaleziono ucznia' });
+    }
 
     const note = await prisma.note.create({
       data: {
@@ -29,16 +39,18 @@ export const createNote = async (req, res) => {
   }
 };
 
-/* =========================
-   GET NOTES BY STUDENT
-========================= */
+
 export const getNotesByStudent = async (req, res) => {
   try {
     const studentId = Number(req.params.studentId);
 
     const tutor = await prisma.tutorProfile.findUnique({
-      where: { userId: req.user.userId },
+      where: { userId: req.user.id },
     });
+
+    if (!tutor) {
+      return res.status(404).json({ error: 'Brak profilu tutora' });
+    }
 
     const notes = await prisma.note.findMany({
       where: {
@@ -54,16 +66,14 @@ export const getNotesByStudent = async (req, res) => {
   }
 };
 
-/* =========================
-   UPDATE NOTE
-========================= */
+
 export const updateNote = async (req, res) => {
   try {
     const id = Number(req.params.id);
     const { content } = req.body;
 
     const tutor = await prisma.tutorProfile.findUnique({
-      where: { userId: req.user.userId },
+      where: { userId: req.user.id },
     });
 
     const note = await prisma.note.findUnique({ where: { id } });
@@ -79,19 +89,18 @@ export const updateNote = async (req, res) => {
 
     res.json(updated);
   } catch (e) {
+    console.error(e);
     res.status(500).json({ error: 'Błąd serwera' });
   }
 };
 
-/* =========================
-   DELETE NOTE
-========================= */
+
 export const deleteNote = async (req, res) => {
   try {
     const id = Number(req.params.id);
 
     const tutor = await prisma.tutorProfile.findUnique({
-      where: { userId: req.user.userId },
+      where: { userId: req.user.id },
     });
 
     const note = await prisma.note.findUnique({ where: { id } });
@@ -104,6 +113,7 @@ export const deleteNote = async (req, res) => {
 
     res.json({ success: true });
   } catch (e) {
+    console.error(e)
     res.status(500).json({ error: 'Błąd serwera' });
   }
 };

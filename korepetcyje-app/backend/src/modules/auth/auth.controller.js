@@ -11,6 +11,10 @@ export const registerUser = async (req, res) => {
       return res.status(400).json({ error: 'Wszystkie pola są wymagane' });
     }
 
+    if (!['TUTOR', 'STUDENT'].includes(role)) {
+      return res.status(400).json({ error: 'Nieprawidłowa rola użytkownika' });
+    }
+
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
       return res.status(409).json({ error: 'Email jest już zajęty' });
@@ -34,7 +38,6 @@ export const registerUser = async (req, res) => {
           firstName,
           lastName: lastName,
           mode: 'ONLINE', // domyślnie
-          subjects: [],
         },
       });
     } else if (role === 'STUDENT') {
@@ -43,15 +46,27 @@ export const registerUser = async (req, res) => {
           userId: user.id,
           firstName,
           lastName: lastName
-
         },
       });
     }
+    //dodanie generacji tokeny
+    const token = jwt.sign(
+      { id: user.id, email: user.email, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '1d' }
+    );
 
-    res.status(201).json({ message: 'Rejestracja zakończona sukcesem' });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+  
+    res.status(201).json({
+          message: 'Rejestracja zakończona sukcesem',
+          token,
+          user: { id: user.id, email: user.email, role: user.role },
+        });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Błąd serwera' });
+      }
+
 };
 
 export const loginUser = async (req, res) => {
@@ -73,7 +88,7 @@ export const loginUser = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { userId: user.id, role: user.role },
+      { id: user.id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: '1d' }
     );
@@ -84,7 +99,8 @@ export const loginUser = async (req, res) => {
     },
   });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error(error);
+    res.status(500).json({ error: 'Błąd serwera' });
   }
 };
 ``
