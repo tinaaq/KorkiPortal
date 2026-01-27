@@ -1,7 +1,15 @@
+
+// src/pages/auth/Login.jsx
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import api from '../../services/api';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
+import { loginRequest } from '../../services/authService';
+import {
+  getTutorProfile,
+  getStudentProfile,
+  isTutorProfileComplete,
+  isStudentProfileComplete,
+} from '../../services/profileService';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -18,14 +26,35 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const res = await api.post('/auth/login', { email, password });
+      const res = await loginRequest({ email, password });
 
-      localStorage.setItem('token', res.data.token);
-
+      // zapis tokenu + user w kontekście
       login(res.data);
 
-      if (res.data.user.role === 'TUTOR') navigate('/tutor');
-      else navigate('/student');
+      const { role } = res.data.user;
+
+      // SPRAWDZENIE PROFILU PO LOGOWANIU
+      if (role === 'TUTOR') {
+        try {
+          const profileRes = await getTutorProfile();
+          const complete = isTutorProfileComplete(profileRes.data);
+
+          if (complete) navigate('/tutor');
+          else navigate('/tutor/profile');
+        } catch {
+          navigate('/tutor/profile');
+        }
+      } else {
+        try {
+          const profileRes = await getStudentProfile();
+          const complete = isStudentProfileComplete(profileRes.data);
+
+          if (complete) navigate('/student');
+          else navigate('/student/profile');
+        } catch {
+          navigate('/student/profile');
+        }
+      }
     } catch (err) {
       setError(
         err.response?.data?.error || 'Błąd logowania'
@@ -73,6 +102,13 @@ export default function Login() {
           {loading ? 'Logowanie...' : 'Zaloguj się'}
         </button>
       </form>
+
+      <p className="mt-4 text-center text-sm">
+        Nie masz konta?{' '}
+        <Link to="/register" className="link link-primary">
+          Zarejestruj się
+        </Link>
+      </p>
     </>
   );
 }

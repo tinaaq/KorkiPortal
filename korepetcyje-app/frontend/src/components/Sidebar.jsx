@@ -22,6 +22,7 @@ export default function Sidebar() {
       {user?.role === 'STUDENT' && (
         <>
           <li><Link to="/student">Dashboard</Link></li>
+          <li><Link to="/student/profile">Profil</Link></li>
           <li><Link to="/student/tutors">Korepetytorzy</Link></li>
           <li><Link to="/student/calendar">Moje zajęcia</Link></li>
           <li><Link to="/student/flashcards">Fiszki</Link></li>

@@ -5,18 +5,24 @@ import AuthLayout from './layouts/AuthLayout';
 import DashboardLayout from './layouts/DashboardLayout';
 
 import Login from './pages/auth/Login';
+import Register from './pages/auth/Register';
+
 import TutorDashboard from './pages/tutor/TutorDashboard';
 import StudentDashboard from './pages/student/StudentDashboard';
 import NotFound from './pages/NotFound';
 
-import TutorProfile from './pages/tutor/Profile';
-import TutorCalendar from './pages/tutor/Calendar';
-import TutorStudents from './pages/tutor/Students';
-import TutorFlashcards from './pages/tutor/Flashcards';
+import TutorProfile from './pages/tutor/TutorProfile';
+import TutorCalendar from './pages/tutor/TutorCalendar';
+import TutorStudents from './pages/tutor/TutorStudents';
+import TutorFlashcards from './pages/tutor/TutorFlashcards';
 
-import StudentTutors from './pages/student/Tutors';
-import StudentCalendar from './pages/student/Calendar';
-import StudentFlashcards from './pages/student/Flashcards';
+import StudentTutors from './pages/student/StudentTutors';
+import StudentTutorDetails from './pages/student/StudentTutorDetails';
+import StudentTutorBooking from './pages/student/StudentTutorBooking';
+import StudentCalendar from './pages/student/StudentCalendar';
+import StudentFlashcards from './pages/student/StudentFlashcards';
+import StudentProfile from './pages/student/StudentProfile';
+
 
 import './App.css'
 
@@ -57,6 +63,17 @@ export default function App() {
           }
         />
 
+        <Route
+          path="/register"
+          element={
+            <AuthRedirect>
+              <AuthLayout>
+                <Register />
+              </AuthLayout>
+            </AuthRedirect>
+          }
+        />
+
 
         {/* TUTOR */}
         <Route
@@ -86,8 +103,11 @@ export default function App() {
           }
         />
         <Route path="/student/tutors" element={<DashboardLayout><StudentTutors /></DashboardLayout>} />
-        <Route path="/student/calendar" element={<DashboardLayout><StudentCalendar /></DashboardLayout>} />
+        <Route path="/student/tutors/:id" element={<DashboardLayout><StudentTutorDetails /></DashboardLayout>} />
+        <Route path="/student/tutors/:id/book" element={<DashboardLayout><StudentTutorBooking /></DashboardLayout>} />
+        <Route path="/student/calendar" element={<DashboardLayout><StudentCalendar tutorId={1}/></DashboardLayout>} />
         <Route path="/student/flashcards" element={<DashboardLayout><StudentFlashcards /></DashboardLayout>} />
+        <Route path="/student/profile" element={<DashboardLayout><StudentProfile /></DashboardLayout>} />
 
         <Route path="*" element={<NotFound />} />
 
