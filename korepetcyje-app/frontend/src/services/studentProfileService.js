@@ -1,5 +1,3 @@
-
-// src/services/studentProfileService.js
 import api from './api';
 
 // GET /api/students/me
@@ -18,8 +16,8 @@ export const isStudentProfileComplete = (profile) => {
 
   return (
     !!profile.firstName &&
-    !!profile.lastName &&
-    !!profile.city &&
-    !!profile.grade
+    !!profile.lastName //&&
+    // !!profile.city &&
+    // !!profile.grade
   );
 };

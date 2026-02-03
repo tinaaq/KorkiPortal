@@ -1,5 +1,3 @@
-
-// src/pages/student/StudentProfile.jsx
 import { useEffect, useState } from 'react';
 import {
   getStudentProfile,
@@ -21,7 +19,7 @@ export default function StudentProfile() {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
-  // 1. Pobierz profil
+
   useEffect(() => {
     const fetchProfile = async () => {
       setLoading(true);
@@ -54,7 +52,6 @@ export default function StudentProfile() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  // 2. Zapisz
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
@@ -88,119 +85,151 @@ export default function StudentProfile() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto">
-      <h1 className="text-2xl font-semibold mb-4">
+  <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+    <div className="space-y-1">
+      <h1 className="text-2xl font-semibold tracking-[-0.01em] text-[#02111B] dark:text-[#F2F6FA]">
         Profil ucznia
       </h1>
+      <p className="text-sm text-[#5D737E]">
+        Uzupełnij dane, aby korepetytorzy mogli lepiej przygotowywać materiały do twoich zajeć.
+      </p>
 
-      {error && (
-        <div className="alert alert-error mb-4 text-sm">{error}</div>
-      )}
-      {success && (
-        <div className="alert alert-success mb-4 text-sm">{success}</div>
-      )}
-
-      <form
-        onSubmit={handleSubmit}
-        className="grid grid-cols-1 md:grid-cols-2 gap-4"
-      >
-        {/* Imię */}
-        <div className="form-control">
-          <label className="label">
-            <span className="label-text">Imię*</span>
-          </label>
-          <input
-            type="text"
-            name="firstName"
-            className="input input-bordered w-full"
-            value={form.firstName}
-            onChange={handleChange}
-            required
-          />
-        </div>
-
-        {/* Nazwisko */}
-        <div className="form-control">
-          <label className="label">
-            <span className="label-text">Nazwisko*</span>
-          </label>
-          <input
-            type="text"
-            name="lastName"
-            className="input input-bordered w-full"
-            value={form.lastName}
-            onChange={handleChange}
-            required
-          />
-        </div>
-
-        {/* Miasto */}
-        <div className="form-control">
-          <label className="label">
-            <span className="label-text">Miasto*</span>
-          </label>
-          <input
-            type="text"
-            name="city"
-            className="input input-bordered w-full"
-            value={form.city}
-            onChange={handleChange}
-          />
-        </div>
-
-        {/* Adres */}
-        <div className="form-control">
-          <label className="label">
-            <span className="label-text">Adres</span>
-          </label>
-          <input
-            type="text"
-            name="address"
-            className="input input-bordered w-full"
-            value={form.address}
-            onChange={handleChange}
-          />
-        </div>
-
-        {/* Klasa */}
-        <div className="form-control">
-          <label className="label">
-            <span className="label-text">Klasa*</span>
-          </label>
-          <input
-            type="text"
-            name="grade"
-            className="input input-bordered w-full"
-            value={form.grade}
-            onChange={handleChange}
-            required
-          />
-        </div>
-
-        {/* Szkoła */}
-        <div className="form-control md:col-span-2">
-          <label className="label">
-            <span className="label-text">Szkoła</span>
-          </label>
-          <input
-            type="text"
-            name="school"
-            className="input input-bordered w-full"
-            value={form.school}
-            onChange={handleChange}
-          />
-        </div>
-
-        <div className="md:col-span-2 flex justify-end mt-4">
-          <button
-            type="submit"
-            className="btn btn-primary"
-            disabled={saving}
-          >
-            {saving ? 'Zapisywanie...' : 'Zapisz profil'}
-          </button>
-        </div>
-      </form>
     </div>
-  );
+
+    <div className="card rounded-lg border border-[#E5E5E5] dark:border-[#3F4045] bg-[#FCFCFC] dark:bg-[#1A232B] shadow-[0_1px_2px_rgba(0,0,0,0.06),0_8px_24px_rgba(0,0,0,0.06)]">
+      <div className="card-body p-5 sm:p-6 space-y-4">
+        <div>
+          <h2 className="text-lg font-semibold text-[#02111B] dark:text-[#F2F6FA]">Dane osobowe i adresy</h2>
+          <p className="text-xs text-[#5D737E]">Pola oznaczone * są wymagane.</p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="form-control">
+            <label className="label py-1">
+              <span className="label-text text-xs font-medium uppercase tracking-wide text-[#5D737E]">
+                Imię*
+              </span>
+            </label>
+            <input
+              type="text"
+              name="firstName"
+              value={form.firstName}
+              onChange={handleChange}
+              required
+              className="input w-full h-11 rounded-md bg-[#FCFCFC] dark:bg-[#161D24] border border-[#E5E5E5] dark:border-[#3F4045] text-[#02111B] dark:text-[#F2F6FA] placeholder:text-[#5D737E] focus:outline-none focus:border-[#58B09C] focus:ring-2 focus:ring-[#58B09C]"
+              placeholder="Jan"
+            />
+          </div>
+
+          <div className="form-control">
+            <label className="label py-1">
+              <span className="label-text text-xs font-medium uppercase tracking-wide text-[#5D737E]">
+                Nazwisko*
+              </span>
+            </label>
+            <input
+              type="text"
+              name="lastName"
+              value={form.lastName}
+              onChange={handleChange}
+              required
+              className="input w-full h-11 rounded-md bg-[#FCFCFC] dark:bg-[#161D24] border border-[#E5E5E5] dark:border-[#3F4045] text-[#02111B] dark:text-[#F2F6FA] placeholder:text-[#5D737E] focus:outline-none focus:border-[#58B09C] focus:ring-2 focus:ring-[#58B09C]"
+              placeholder="Kowalski"
+            />
+          </div>
+
+          <div className="form-control">
+            <label className="label py-1">
+              <span className="label-text text-xs font-medium uppercase tracking-wide text-[#5D737E]">
+                Miasto
+              </span>
+            </label>
+            <input
+              type="text"
+              name="city"
+              value={form.city}
+              onChange={handleChange}
+              className="input w-full h-11 rounded-md bg-[#FCFCFC] dark:bg-[#161D24] border border-[#E5E5E5] dark:border-[#3F4045] text-[#02111B] dark:text-[#F2F6FA] placeholder:text-[#5D737E] focus:outline-none focus:border-[#58B09C] focus:ring-2 focus:ring-[#58B09C]"
+              placeholder="np. Warszawa"
+            />
+          </div>
+
+          <div className="form-control">
+            <label className="label py-1">
+              <span className="label-text text-xs font-medium uppercase tracking-wide text-[#5D737E]">
+                Adres
+              </span>
+            </label>
+            <input
+              type="text"
+              name="address"
+              value={form.address}
+              onChange={handleChange}
+              className="input w-full h-11 rounded-md bg-[#FCFCFC] dark:bg-[#161D24] border border-[#E5E5E5] dark:border-[#3F4045] text-[#02111B] dark:text-[#F2F6FA] placeholder:text-[#5D737E] focus:outline-none focus:border-[#58B09C] focus:ring-2 focus:ring-[#58B09C]"
+              placeholder="ul. Przykładowa 1/2"
+            />
+          </div>
+
+          <div className="form-control">
+            <label className="label py-1">
+              <span className="label-text text-xs font-medium uppercase tracking-wide text-[#5D737E]">
+                Klasa
+              </span>
+            </label>
+            <input
+              type="text"
+              name="grade"
+              value={form.grade}
+              onChange={handleChange}
+              className="input w-full h-11 rounded-md bg-[#FCFCFC] dark:bg-[#161D24] border border-[#E5E5E5] dark:border-[#3F4045] text-[#02111B] dark:text-[#F2F6FA] placeholder:text-[#5D737E] focus:outline-none focus:border-[#58B09C] focus:ring-2 focus:ring-[#58B09C]"
+              placeholder="np. 5, VII"
+            />
+          </div>
+
+          <div className="form-control md:col-span-1">
+            <label className="label py-1">
+              <span className="label-text text-xs font-medium uppercase tracking-wide text-[#5D737E]">
+                Szkoła
+              </span>
+            </label>
+            <input
+              type="text"
+              name="school"
+              value={form.school}
+              onChange={handleChange}
+              className="input w-full h-11 rounded-md bg-[#FCFCFC] dark:bg-[#161D24] border border-[#E5E5E5] dark:border-[#3F4045] text-[#02111B] dark:text-[#F2F6FA] placeholder:text-[#5D737E] focus:outline-none focus:border-[#58B09C] focus:ring-2 focus:ring-[#58B09C]"
+              placeholder="np. Liceum, Uniwersytet"
+            />
+          </div>
+
+            {(error || success) && (
+              <div className="md:col-span-2">
+                <div
+                  className={[
+                    "rounded-md p-3 text-sm",
+                    error
+                      ? "border border-[#E15B64] bg-[#F2F2F2] dark:bg-[#161D24] text-[#E15B64]"
+                      : "border border-[#58B09C] bg-[#F2F2F2] dark:bg-[#161D24] text-[#58B09C]"
+                  ].join(" ")}
+                >
+                  {error || success}
+                </div>
+              </div>
+            )}
+
+ 
+          <div className="md:col-span-2 flex justify-end pt-2">
+            <button
+              type="submit"
+              disabled={saving}
+              className="btn h-11 rounded-md px-5 bg-[#58B09C] hover:bg-[#4FA893] text-white focus:outline-none focus:ring-2 focus:ring-[#58B09C] disabled:opacity-60 w-full sm:w-auto"
+            >
+              {saving ? 'Zapisywanie...' : 'Zapisz profil'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+);
 }

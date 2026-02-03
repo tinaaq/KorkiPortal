@@ -9,6 +9,10 @@ import {
   createSet,
   getMySets,
   assignSetToStudent,
+  unassignSetFromStudent,
+  getSetStudents,
+  deleteSet, 
+  updateSet,
 } from './flashcards.controller.js';
 
 import { authMiddleware } from '../../middleware/authMiddleware.js';
@@ -80,6 +84,34 @@ router.post(
   authMiddleware,
   checkRole(['TUTOR']),
   assignSetToStudent
+);
+
+router.delete(
+  '/sets/:id/assign/:studentId',
+  authMiddleware,
+  checkRole(['TUTOR']),
+  unassignSetFromStudent
+);
+
+router.get(
+  '/sets/:id/students',
+  authMiddleware,
+  checkRole(['TUTOR']),
+  getSetStudents
+);
+
+router.delete(
+  '/sets/:id',
+  authMiddleware,
+  checkRole(['TUTOR']),
+  deleteSet
+);
+
+router.patch(
+  '/sets/:id',
+  authMiddleware,
+  checkRole(['TUTOR']),
+  updateSet
 );
 
 export default router;

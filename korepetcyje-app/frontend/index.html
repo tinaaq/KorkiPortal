@@ -1,12 +1,21 @@
 <!doctype html>
-<html lang="en">
+<html lang="pl" data-theme="mylight">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
+    <title>czasNaKorki.studia</title>
   </head>
   <body>
+    <script>
+  (function () {
+    var root = document.documentElement;
+    var stored = localStorage.getItem('mode');
+    if (stored === 'dark') { root.classList.add('dark'); }
+    else { root.classList.remove('dark'); }
+  })();
+</script>
+
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

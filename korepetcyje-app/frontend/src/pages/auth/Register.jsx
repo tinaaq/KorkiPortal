@@ -1,5 +1,4 @@
 
-// src/pages/auth/Register.jsx
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
@@ -17,7 +16,7 @@ export default function Register() {
     password: '',
     firstName: '',
     lastName: '',
-    role: 'STUDENT', // domyślnie
+    role: 'STUDENT',
   });
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -79,11 +78,22 @@ export default function Register() {
     }
   };
 
-  return (
+return (
     <>
-      <h2 className="text-xl font-semibold mb-4 text-center">
-        Rejestracja
-      </h2>
+      <div className="mb-4">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-1 text-xs md:text-sm text-[#58B09C] hover:underline"
+        >
+          <span className="text-sm">←</span>
+          Wróć na stronę główną
+        </Link>
+      </div>
+
+      <h2 className="text-xl font-semibold text-center mb-1">Rejestracja</h2>
+      <p className="text-center text-xs md:text-sm text-base-content/70 mb-4">
+        Utwórz konto jako uczeń lub korepetytor.
+      </p>
 
       {error && (
         <div className="alert alert-error mb-4 text-sm">
@@ -91,79 +101,101 @@ export default function Register() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-        <div className="join join-vertical sm:join-horizontal mb-2">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <div className="flex justify-center gap-3 mb-2">
           <button
             type="button"
-            className={`btn join-item ${
-              form.role === 'STUDENT' ? 'btn-primary' : 'btn-ghost'
-            }`}
-            onClick={() => handleRoleChange('STUDENT')}
+            onClick={() => handleRoleChange("STUDENT")}
+            className={
+              "btn btn-sm md:btn-md rounded-lg px-4 " +
+              (form.role === "STUDENT"
+                ? "bg-[#58B09C] hover:bg-[#4A957F] text-white border-none"
+                : "bg-base-100 text-base-content border border-base-300 hover:bg-base-200")
+            }
           >
             Uczeń
           </button>
+
           <button
             type="button"
-            className={`btn join-item ${
-              form.role === 'TUTOR' ? 'btn-primary' : 'btn-ghost'
-            }`}
-            onClick={() => handleRoleChange('TUTOR')}
+            onClick={() => handleRoleChange("TUTOR")}
+            className={
+              "btn btn-sm md:btn-md rounded-lg px-4 " +
+              (form.role === "TUTOR"
+                ? "bg-[#58B09C] hover:bg-[#4A957F] text-white border-none"
+                : "bg-base-100 text-base-content border border-base-300 hover:bg-base-200")
+            }
           >
             Korepetytor
           </button>
         </div>
 
-        <input
-          type="text"
-          name="firstName"
-          placeholder="Imię"
-          className="input input-bordered w-full"
-          value={form.firstName}
-          onChange={handleChange}
-          required
-        />
+        <label className="form-control w-full">
+          <span className="label-text">Imię</span>
+          <input
+            type="text"
+            name="firstName"
+            placeholder="np. Jan"
+            className="input input-bordered w-full"
+            value={form.firstName}
+            onChange={handleChange}
+            required
+          />
+        </label>
 
-        <input
-          type="text"
-          name="lastName"
-          placeholder="Nazwisko"
-          className="input input-bordered w-full"
-          value={form.lastName}
-          onChange={handleChange}
-          required
-        />
+        <label className="form-control w-full">
+          <span className="label-text">Nazwisko</span>
+          <input
+            type="text"
+            name="lastName"
+            placeholder="np. Kowalski"
+            className="input input-bordered w-full"
+            value={form.lastName}
+            onChange={handleChange}
+            required
+          />
+        </label>
 
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          className="input input-bordered w-full"
-          value={form.email}
-          onChange={handleChange}
-          required
-        />
+        <label className="form-control w-full">
+          <span className="label-text">Email</span>
+          <input
+            type="email"
+            name="email"
+            placeholder="np. jan.kowalski@email.com"
+            className="input input-bordered w-full"
+            value={form.email}
+            onChange={handleChange}
+            required
+            autoComplete="email"
+          />
+        </label>
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Hasło"
-          className="input input-bordered w-full"
-          value={form.password}
-          onChange={handleChange}
-          required
-        />
+        <label className="form-control w-full">
+          <span className="label-text">Hasło</span>
+          <input
+            type="password"
+            name="password"
+            placeholder="Wpisz hasło"
+            className="input input-bordered w-full"
+            value={form.password}
+            onChange={handleChange}
+            required
+            autoComplete="new-password"
+          />
+        </label>
 
         <button
-          className="btn btn-primary mt-2"
+          type="submit"
           disabled={loading}
+          className="btn w-full rounded-lg bg-[#58B09C] hover:bg-[#4A957F] text-white border-none mt-2 disabled:opacity-70 disabled:cursor-not-allowed"
         >
-          {loading ? 'Rejestrowanie...' : 'Zarejestruj się'}
+          {loading ? "Rejestrowanie..." : "Zarejestruj się"}
         </button>
       </form>
 
       <p className="mt-4 text-center text-sm">
-        Masz już konto?{' '}
-        <Link to="/login" className="link link-primary">
+        Masz już konto?{" "}
+        <Link to="/login" className="text-[#58B09C] hover:underline">
           Zaloguj się
         </Link>
       </p>

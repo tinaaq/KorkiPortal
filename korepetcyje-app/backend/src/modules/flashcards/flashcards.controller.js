@@ -194,18 +194,27 @@ export const getStudentFlashcards = async (req, res) => {
       return res.status(404).json({ error: 'Brak profilu ucznia' });
     }
 
-    const sets = await prisma.flashcardSetAssignment.findMany({
+    const assignments = await prisma.flashcardSetAssignment.findMany({
       where: { studentId: student.id },
       include: {
         set: {
           include: { flashcards: true },
         },
       },
+      orderBy: {set: { createdAt: 'desc'}},
     });
 
-    const flashcards = sets.flatMap((s) => s.set.flashcards);
+    //const flashcards = sets.flatMap((s) => s.set.flashcards);
+    
+      const sets = assignments.map((a) => ({
+            id: a.set.id,
+            name: a.set.name,
+            createdAt: a.set.createdAt,
+            flashcards: a.set.flashcards,
+          }));
 
-    res.json(flashcards);
+
+    res.json(sets);//flashcards
   } catch (e) {
     console.error('Error getStudentFlashcards', e);
     res.status(500).json({ error: 'Błąd serwera' });
@@ -256,6 +265,7 @@ export const getMySets = async (req, res) => {
     const sets = await prisma.flashcardSet.findMany({
       where: { tutorId: tutor.id },
       include: { flashcards: true },
+      orderBy: { createdAt: 'desc'}
     });
 
     res.json(sets);
@@ -314,6 +324,195 @@ export const assignSetToStudent = async (req, res) => {
       return res.status(409).json({ error: 'Zestaw już przypisany' });
     }
     console.error('ERROR assignSetToStudent', e);
+    res.status(500).json({ error: 'Błąd serwera' });
+  }
+};
+
+
+export const unassignSetFromStudent = async (req, res) => {
+  try {
+    const setId = Number(req.params.id);
+    const studentId = Number(req.params.studentId);
+
+    if (!isValidId(setId)) {
+      return res.status(400).json({ error: 'Nieprawidłowe ID zestawu' });
+    }
+
+    if (!isValidId(studentId)) {
+      return res.status(400).json({ error: 'Nieprawidłowe ID ucznia' });
+    }
+
+    const tutor = await prisma.tutorProfile.findUnique({
+      where: { userId: req.user.id },
+    });
+
+    if (!tutor) {
+      return res.status(404).json({ error: 'Brak profilu tutora' });
+    }
+
+    const set = await prisma.flashcardSet.findUnique({
+      where: { id: Number(setId) },
+    });
+
+    if (!set || set.tutorId !== tutor.id) {
+      return res.status(404).json({ error: 'Brak zestawu lub dostępu do zestawu' });
+    }
+
+    const result = await prisma.flashcardSetAssignment.deleteMany({
+      where: {
+        setId: Number(setId),
+        studentId: Number(studentId),
+      },
+    });
+
+    if (result.count === 0) {
+      return res.status(404).json({ error: 'Przypisanie nie istnieje' });
+    }
+
+    res.json({ success: true });
+  } catch (e) {
+    console.error('ERROR unassignSetFromStudent', e);
+    res.status(500).json({ error: 'Błąd serwera' });
+  }
+};
+
+export const getSetStudents = async (req, res) => {
+  try {
+    const setId = Number(req.params.id);
+
+    if (!isValidId(setId)) {
+      return res.status(400).json({ error: 'Nieprawidłowe ID zestawu' });
+    }
+
+    const tutor = await prisma.tutorProfile.findUnique({
+      where: { userId: req.user.id },
+    });
+
+    if (!tutor) {
+      return res.status(404).json({ error: 'Brak profilu tutora' });
+    }
+
+    const set = await prisma.flashcardSet.findUnique({
+      where: { id: Number(setId) },
+    });
+
+    if (!set || set.tutorId !== tutor.id) {
+      return res.status(404).json({ error: 'Brak zestawu lub dostępu do zestawu' });
+    }
+
+    const assignments = await prisma.flashcardSetAssignment.findMany({
+      where: { setId: Number(setId) },
+      include: {
+        student: true,
+      },
+    });
+
+    const students = assignments.map((a) => ({
+      assignmentId: a.id,
+      studentId: a.studentId,
+      id: a.student.id,
+      firstName: a.student.firstName,
+      lastName: a.student.lastName,
+      city: a.student.city,
+      grade: a.student.grade,
+    }));
+
+    res.json(students);
+  } catch (e) {
+    console.error('ERROR getSetStudents', e);
+    res.status(500).json({ error: 'Błąd serwera' });
+  }
+};
+
+
+export const deleteSet = async (req, res) => {
+  try {
+    const setId = Number(req.params.id);
+
+    if (!isValidId(setId)) {
+      return res.status(400).json({ error: 'Nieprawidłowe ID zestawu' });
+    }
+
+    const tutor = await prisma.tutorProfile.findUnique({
+      where: { userId: req.user.id },
+    });
+
+    if (!tutor) {
+      return res.status(404).json({ error: 'Brak profilu tutora' });
+    }
+
+    const set = await prisma.flashcardSet.findUnique({
+      where: { id: setId },
+    });
+
+    if (!set || set.tutorId !== tutor.id) {
+      return res.status(404).json({ error: 'Brak zestawu lub dostępu do zestawu' });
+    }
+
+    await prisma.flashcardSetAssignment.deleteMany({
+      where: { setId },
+    });
+
+    await prisma.flashcard.deleteMany({
+      where: { setId },
+    });
+
+    await prisma.flashcardSet.delete({
+      where: { id: setId },
+    });
+
+    res.json({ success: true });
+  } catch (e) {
+    console.error('ERROR deleteSet', e);
+    res.status(500).json({ error: 'Błąd serwera' });
+  }
+};
+
+export const updateSet = async (req, res) => {
+  try {
+    const setId = Number(req.params.id);
+    const { name } = req.body;
+
+    if (!isValidId(setId)) {
+      return res.status(400).json({ error: 'Nieprawidłowe ID zestawu' });
+    }
+
+    if (!name) {
+      return res.status(400).json({ error: 'Brak nazwy' });
+    }
+
+    if (!isValidString(name, 200)) {
+      return res
+        .status(400)
+        .json({ error: 'Nazwa zestawu musi mieć 1–200 znaków' });
+    }
+
+    const tutor = await prisma.tutorProfile.findUnique({
+      where: { userId: req.user.id },
+    });
+
+    if (!tutor) {
+      return res.status(404).json({ error: 'Brak profilu tutora' });
+    }
+
+    const set = await prisma.flashcardSet.findUnique({
+      where: { id: setId },
+    });
+
+    if (!set || set.tutorId !== tutor.id) {
+      return res
+        .status(404)
+        .json({ error: 'Brak zestawu lub dostępu do zestawu' });
+    }
+
+    const updated = await prisma.flashcardSet.update({
+      where: { id: setId },
+      data: { name },
+    });
+
+    res.json(updated);
+  } catch (e) {
+    console.error('ERROR updateSet', e);
     res.status(500).json({ error: 'Błąd serwera' });
   }
 };

@@ -72,6 +72,7 @@ model Subject {
   name String @unique
 
   tutors TutorSubject[]
+  bookings Booking[]
 }
 
 model TutorSubject {
@@ -132,6 +133,7 @@ model Booking {
 
   tutor   TutorProfile   @relation(fields: [tutorId], references: [id])
   student StudentProfile @relation(fields: [studentId], references: [id])
+  subject Subject @relation(fields: [subjectId], references: [id])
 
   @@index([tutorId, startAt])
   @@index([studentId, startAt])

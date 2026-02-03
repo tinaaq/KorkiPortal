@@ -1,5 +1,3 @@
-
-// src/pages/student/StudentTutorBooking.jsx
 import { useEffect, useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import FullCalendar from '@fullcalendar/react';
@@ -118,7 +116,7 @@ export default function StudentTutorBooking() {
     const start = info.start;
     const end = info.end;
 
-    // podziel zaznaczenie na 30-min sloty
+
     const segments = [];
     const cursor = new Date(start);
 
@@ -187,6 +185,7 @@ export default function StudentTutorBooking() {
     setBookingLoading(true);
 
     try {
+      console.log('Wybrane sloty:', selectedSlots);
       for (const startAt of selectedSlots) {
         await createBooking({
           tutorId: Number(id),
@@ -198,7 +197,8 @@ export default function StudentTutorBooking() {
       }
 
       setBookingSuccess(
-        `Zarezerwowano ${selectedSlots.length} slot(ów) po ${LESSON_MINUTES} min.`
+        'Zarezerwowano zajęcia'
+        // `Zarezerwowano ${selectedSlots.length} slot(ów) po ${LESSON_MINUTES} min.`
       );
       setSelectedSlots([]);
       setSelectionInfo(null);
@@ -241,30 +241,45 @@ export default function StudentTutorBooking() {
     );
   }
 
-  return (
-    <div className="max-w-6xl mx-auto">
-      <h1 className="text-2xl font-semibold mb-2">
+return (
+  <div className="max-w-6xl mx-auto px-4 py-6">
+    <div className="mb-6">
+      <h1 className="text-2xl font-semibold text-[#02111B] mb-1">
         Rezerwacja zajęć – {tutor.firstName} {tutor.lastName}
       </h1>
-      <p className="mb-4 text-sm opacity-80">
-        Zaznacz w kalendarzu zielone sloty, aby zarezerwować zajęcia.
-        Jednostka zajęć to {LESSON_MINUTES} minut.
+      <p className="text-sm text-[#5D737E]">
+        Wybierz dostępne zielone sloty w kalendarzu.
+   
       </p>
+    </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        {/* KALENDARZ */}
-        <div className="lg:col-span-2 card bg-base-100 shadow-sm">
-          <div className="card-body">
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+   
+      <div className="lg:col-span-2">
+        <div className="card bg-[#FCFCFC] shadow-sm border border-[#E5E5E5] rounded-lg">
+          <div className="card-body p-4">
+
             {slotsError && (
-              <div className="alert alert-error mb-2 text-sm">
+              <div className="border border-[#E15B64] bg-[#E15B6420] text-[#E15B64] text-sm rounded-md px-3 py-2 mb-3">
                 {slotsError}
               </div>
             )}
 
-            <div className="border rounded-lg overflow-hidden">
+            <div className="border border-[#E5E5E5] rounded-lg overflow-hidden">
               <FullCalendar
                 plugins={[timeGridPlugin, interactionPlugin]}
-                initialView="timeGridWeek"
+                              initialView={window.innerWidth < 640 ? 'timeGridDay' : 'timeGridWeek'}
+              headerToolbar={{
+                left: window.innerWidth < 640 ? 'prev,next today' : 'prev,next today',
+                center: 'title',
+                right: window.innerWidth < 640 ? 'timeGridDay' : 'timeGridWeek,timeGridDay',
+              }}
+              
+              buttonText={{
+                today: 'Dziś',
+                week: 'Tydzień',
+                day: 'Dzień',
+              }}
                 allDaySlot={false}
                 slotMinTime="06:00:00"
                 slotMaxTime="22:00:00"
@@ -276,62 +291,66 @@ export default function StudentTutorBooking() {
                 locale="pl"
                 firstDay={1}
                 unselectAuto={false}
-                datesSet={(arg) => {
-                  setCalendarRange({ start: arg.start, end: arg.end });
-                }}
+                selectLongPressDelay={50}
+                datesSet={(arg) => setCalendarRange({ start: arg.start, end: arg.end })}
                 select={handleSelect}
                 unselect={handleUnselect}
               />
             </div>
 
             {slotsLoading && (
-              <div className="flex justify-center py-2">
-                <span className="loading loading-spinner" />
+              <div className="flex justify-center py-3">
+                <span className="loading loading-spinner text-[#58B09C]" />
               </div>
             )}
           </div>
         </div>
+      </div>
 
-        {/* FORMULARZ REZERWACJI */}
-        <div className="card bg-base-100 shadow-sm">
-          <div className="card-body">
-            <h2 className="card-title mb-2">Szczegóły rezerwacji</h2>
+   
+      <div>
+        <div className="card bg-[#FCFCFC] shadow-sm border border-[#E5E5E5] rounded-lg">
+          <div className="card-body p-4">
+            <h2 className="text-lg font-semibold text-[#02111B] mb-3">
+              Szczegóły rezerwacji
+            </h2>
 
             {bookingError && (
-              <div className="alert alert-error mb-2 text-sm">
+              <div className="border border-[#E15B64] bg-[#E15B6420] text-[#E15B64] text-sm rounded-md px-3 py-2 mb-3">
                 {bookingError}
               </div>
             )}
+
             {bookingSuccess && (
-              <div className="alert alert-success mb-2 text-sm">
+              <div className="border border-[#58B09C] bg-[#58B09C20] text-[#58B09C] text-sm rounded-md px-3 py-2 mb-3">
                 {bookingSuccess}
               </div>
             )}
 
-            {/* Wybrany zakres */}
-            <div className="mb-3 text-sm">
-              <div className="font-semibold mb-1">Wybrany zakres:</div>
+       
+            <div className="mb-4">
+              <div className="text-sm font-semibold text-[#02111B] mb-1">Wybrany zakres:</div>
               {selectionInfo ? (
-                <div className="font-mono">
-                  {selectionInfo.start.toLocaleString()} –{' '}
-                  {selectionInfo.end.toLocaleString()} (
+                <div className="text-sm font-mono text-[#3F4045]">
+                  {selectionInfo.start.toLocaleString()} – {selectionInfo.end.toLocaleString()} (
                   {selectedSlots.length * LESSON_MINUTES} min)
                 </div>
               ) : (
-                <span className="opacity-70">
+                <div className="text-sm text-[#5D737E] opacity-70">
                   Zaznacz w kalendarzu zakres zajęć.
-                </span>
+                </div>
               )}
             </div>
 
-            <form onSubmit={handleCreateBooking} className="flex flex-col gap-3">
-              {/* Przedmiot */}
+            <form onSubmit={handleCreateBooking} className="flex flex-col gap-4">
+
+       
               <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Przedmiot</span>
+                <label className="label pb-1">
+                  <span className="text-sm text-[#02111B]">Przedmiot</span>
                 </label>
                 <select
-                  className="select select-bordered w-full"
+                  className="select w-full border border-[#E5E5E5] bg-[#FCFCFC] text-[#02111B] rounded-md focus:outline-none focus:ring-2 focus:ring-[#58B09C]"
                   value={subjectId}
                   onChange={(e) => setSubjectId(e.target.value)}
                   required
@@ -346,79 +365,89 @@ export default function StudentTutorBooking() {
                 </select>
               </div>
 
-              {/* Tryb zajęć */}
+          
               <div className="form-control">
-                <label className="label">
-                  <span className="label-text">Tryb zajęć</span>
+                <label className="label pb-1">
+                  <span className="text-sm text-[#02111B]">Tryb zajęć</span>
                 </label>
+
                 <div className="join">
                   <button
                     type="button"
-                    className={`btn join-item ${
-                      mode === 'ONLINE' ? 'btn-primary' : 'btn-outline'
-                    }`}
-                    disabled={!availableModes.includes('ONLINE')}
                     onClick={() => setMode('ONLINE')}
+                    disabled={!availableModes.includes('ONLINE')}
+                    className={`btn join-item rounded-md border border-[#E5E5E5] ${
+                      mode === 'ONLINE'
+                        ? 'bg-[#58B09C] text-white'
+                        : 'bg-[#FCFCFC] text-[#02111B]'
+                    } hover:bg-[#58B09C30] focus:ring-2 focus:ring-[#58B09C]`}
                   >
                     Online
                   </button>
+
                   <button
                     type="button"
-                    className={`btn join-item ${
-                      mode === 'OFFLINE' ? 'btn-primary' : 'btn-outline'
-                    }`}
-                    disabled={!availableModes.includes('OFFLINE')}
                     onClick={() => setMode('OFFLINE')}
+                    disabled={!availableModes.includes('OFFLINE')}
+                    className={`btn join-item rounded-md border border-[#E5E5E5] ${
+                      mode === 'OFFLINE'
+                        ? 'bg-[#58B09C] text-white'
+                        : 'bg-[#FCFCFC] text-[#02111B]'
+                    } hover:bg-[#58B09C30] focus:ring-2 focus:ring-[#58B09C]`}
                   >
                     Offline
                   </button>
                 </div>
+
                 {!availableModes.length && (
-                  <p className="text-xs text-error mt-1">
+                  <p className="text-xs text-[#E15B64] mt-1">
                     Korepetytor nie ma ustawionego trybu zajęć.
                   </p>
                 )}
               </div>
 
-              {/* Miejsce zajęć (dla OFFLINE) */}
+      
               {mode === 'OFFLINE' && (
                 <div className="form-control">
-                  <label className="label">
-                    <span className="label-text">Miejsce zajęć</span>
+                  <label className="label pb-1">
+                    <span className="text-sm text-[#02111B]">Miejsce zajęć</span>
                   </label>
+
                   <div className="join">
                     <button
                       type="button"
-                      className={`btn join-item ${
-                        addressOption === 'student'
-                          ? 'btn-primary'
-                          : 'btn-outline'
-                      }`}
                       onClick={() => setAddressOption('student')}
+                      className={`btn join-item rounded-md border border-[#E5E5E5] ${
+                        addressOption === 'student'
+                          ? 'bg-[#58B09C] text-white'
+                          : 'bg-[#FCFCFC] text-[#02111B]'
+                      } hover:bg-[#58B09C30] focus:ring-2 focus:ring-[#58B09C]`}
                     >
                       U ucznia
                     </button>
+
                     <button
                       type="button"
-                      className={`btn join-item ${
-                        addressOption === 'tutor'
-                          ? 'btn-primary'
-                          : 'btn-outline'
-                      }`}
                       onClick={() => setAddressOption('tutor')}
+                      className={`btn join-item rounded-md border border-[#E5E5E5] ${
+                        addressOption === 'tutor'
+                          ? 'bg-[#58B09C] text-white'
+                          : 'bg-[#FCFCFC] text-[#02111B]'
+                      } hover:bg-[#58B09C30] focus:ring-2 focus:ring-[#58B09C]`}
                     >
                       U korepetytora
                     </button>
                   </div>
-                  <p className="text-xs opacity-70 mt-1">
+
+                  <p className="text-xs text-[#5D737E] opacity-70 mt-1">
                     Adres zostanie pobrany z profilu ucznia / korepetytora.
                   </p>
                 </div>
               )}
 
+     
               <button
                 type="submit"
-                className="btn btn-primary mt-2"
                 disabled={
                   bookingLoading ||
                   !selectionInfo ||
@@ -426,6 +455,7 @@ export default function StudentTutorBooking() {
                   !mode ||
                   (mode === 'OFFLINE' && !addressOption)
                 }
+                className="btn w-full rounded-md bg-[#58B09C] text-white hover:bg-[#58B09C90] focus:ring-2 focus:ring-[#58B09C] disabled:opacity-50"
               >
                 {bookingLoading ? 'Rezerwowanie...' : 'Zarezerwuj zajęcia'}
               </button>
@@ -434,7 +464,9 @@ export default function StudentTutorBooking() {
         </div>
       </div>
     </div>
-  );
+  </div>
+);
+
 }
 
 // Wyliczenie dostępnych trybów na podstawie tutor.mode

@@ -1,5 +1,3 @@
-
-// src/pages/student/StudentTutorDetails.jsx
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getTutorById } from '../../services/tutorsService';
@@ -17,6 +15,7 @@ export default function StudentTutorDetails() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
+  const API_URL = import.meta.env.VITE_API_URL;
   
   const handleBookClick = () => {
     navigate(`/student/tutors/${id}/book`);
@@ -70,104 +69,121 @@ export default function StudentTutorDetails() {
     );
   }
 
-  return (
-    <div className="max-w-4xl mx-auto">
-      {/* Górny panel */}
-      <div className="card bg-base-100 shadow-sm mb-4">
-        <div className="card-body flex flex-col md:flex-row gap-4">
-          {/* Avatar */}
-          <div className="flex justify-center md:block">
-            <div className="avatar">
-              <div className="w-24 h-24 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
-                {tutor.photoUrl ? (
-                  // eslint-disable-next-line jsx-a11y/alt-text
-                  <img src={tutor.photoUrl} />
-                ) : (
-                  <div className="flex items-center justify-center w-full h-full bg-base-200 text-2xl">
-                    {tutor.firstName?.[0]}
-                    {tutor.lastName?.[0]}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Dane główne */}
-          <div className="flex-1">
-            <div className="flex flex-wrap items-center gap-3 mb-2">
-              <h1 className="text-2xl font-semibold">
-                {tutor.firstName} {tutor.lastName}
-              </h1>
-              {renderModeBadge(tutor.mode)}
-            </div>
-
-            <div className="flex flex-wrap gap-3 text-sm opacity-80 mb-3">
-              {tutor.city && (
-                <span>
-                  📍 {tutor.city}
-                </span>
+return (
+  <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+   
+    <div className="card rounded-lg border border-[#E5E5E5] dark:border-[#3F4045] bg-[#FCFCFC] dark:bg-[#1A232B] shadow-[0_1px_2px_rgba(0,0,0,0.06)]">
+      <div className="card-body p-5 sm:p-6 flex flex-col md:flex-row gap-5">
+     
+        <div className="flex justify-center md:block">
+          <div className="avatar">
+            <div className="w-24 h-24 rounded-full ring ring-[#58B09C] ring-offset-2 ring-offset-[#FCFCFC] dark:ring-offset-[#1A232B] overflow-hidden bg-[#F2F2F2] dark:bg-[#161D24] text-[#02111B] dark:text-[#F2F6FA] flex items-center justify-center text-2xl font-semibold">
+              {tutor.photoUrl ? (
+                // eslint-disable-next-line jsx-a11y/alt-text
+                // <img src={tutor.photoUrl} />
+                <img src={(tutor.photoUrl ? `${API_URL}${tutor.photoUrl}` : '')} />
+              ) : (
+                <>
+                  {tutor.firstName?.[0] || 'K'}
+                  {tutor.lastName?.[0] || 'R'}
+                </>
               )}
-              {tutor.meetingLink && (
-                <a
-                  href={tutor.meetingLink}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="link link-primary"
-                >
-                  🔗 Link do zajęć online
-                </a>
-              )}
-            </div>
-
-            {tutor.description && (
-              <p className="text-sm opacity-90 whitespace-pre-line">
-                {tutor.description}
-              </p>
-            )}
-
-            <div className="mt-4">
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={handleBookClick}
-              >
-                Umów się na zajęcia
-              </button>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Przedmioty i ceny */}
-      <div className="card bg-base-100 shadow-sm">
-        <div className="card-body">
-          <h2 className="card-title mb-2">Przedmioty i ceny</h2>
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-2">
+            <h1 className="text-2xl font-semibold text-[#02111B] dark:text-[#F2F6FA] truncate">
+              {tutor.firstName} {tutor.lastName}
+            </h1>
 
-          {Array.isArray(tutor.subjects) && tutor.subjects.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
-              {tutor.subjects.map((s) => (
-                <div
-                  key={s.subjectId}
-                  className="badge badge-outline gap-1 px-3 py-2 text-sm"
-                >
-                  <span>{s.subject?.name || 'Przedmiot'}</span>
-                  {s.priceInfo && (
-                    <>
-                      <span className="opacity-60">•</span>
-                      <span>{s.priceInfo}</span>
-                    </>
-                  )}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm opacity-70">
-              Korepetytor nie dodał jeszcze informacji o przedmiotach.
+            {tutor.mode && (
+              <span
+                className={[
+                  "badge rounded-md px-2 py-1 text-[11px] border",
+                  tutor.mode === 'ONLINE'
+                    ? "border-[#5D737E] text-[#5D737E] bg-transparent"
+                    : tutor.mode === 'OFFLINE'
+                    ? "border-[#F4C95D] text-[#02111B] bg-[#F4C95D]/20"
+                    : "border-[#58B09C] text-[#58B09C] bg-transparent"
+                ].join(" ")}
+              >
+                {tutor.mode === 'ONLINE' && 'Online'}
+                {tutor.mode === 'OFFLINE' && 'Offline'}
+                {tutor.mode === 'BOTH' && 'Online + Offline'}
+              </span>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-x-3 gap-y-2 text-sm text-[#5D737E] mb-3">
+            {tutor.city && (
+              <span className="truncate font-semibold"> {tutor.city}</span>
+            )}
+
+            {tutor.meetingLink && (
+              <a
+                href={tutor.meetingLink}
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1 text-[#5D737E] hover:text-[#02111B] dark:hover:text-[#F2F6FA] underline-offset-2 hover:underline"
+              >
+                 Link do zajęć online
+              </a>
+            )}
+          </div>
+
+          {tutor.description && (
+            <p className="text-sm text-[#02111B] dark:text-[#F2F6FA] opacity-90 whitespace-pre-line">
+              {tutor.description}
             </p>
           )}
+
+
+          <div className="mt-4">
+            <button
+              type="button"
+              onClick={handleBookClick}
+              className="btn h-11 rounded-md px-5 bg-[#58B09C] hover:bg-[#4FA893] text-white focus:outline-none focus:ring-2 focus:ring-[#58B09C]"
+            >
+              Umów się na zajęcia
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  );
+
+    <div className="card rounded-lg border border-[#E5E5E5] dark:border-[#3F4045] bg-[#FCFCFC] dark:bg-[#1A232B] shadow-[0_1px_2px_rgba(0,0,0,0.06)]">
+      <div className="card-body p-5 sm:p-6">
+        <h2 className="text-lg font-semibold text-[#02111B] dark:text-[#F2F6FA] mb-3">
+          Przedmioty i ceny
+        </h2>
+
+        {Array.isArray(tutor.subjects) && tutor.subjects.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {tutor.subjects.map((s) => (
+              <div
+                key={s.subjectId}
+                className="badge rounded-md px-3 py-2 text-sm border border-[#E5E5E5] dark:border-[#3F4045] bg-transparent text-[#02111B] dark:text-[#F2F6FA] gap-2"
+              >
+                <span>{s.subject?.name || 'Przedmiot'}</span>
+                {s.priceInfo && (
+                  <>
+                    <span className="text-[#5D737E]">•</span>
+                    <span className="text-[#02111B] dark:text-[#F2F6FA]">{s.priceInfo}</span>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-[#5D737E]">
+            Korepetytor nie dodał jeszcze informacji o przedmiotach.
+          </p>
+        )}
+      </div>
+    </div>
+  </div>
+);
 }
 ``

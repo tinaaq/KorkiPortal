@@ -1,5 +1,4 @@
 
-// src/services/bookingsService.js
 import api from './api';
 
 // STUDENT — tworzenie rezerwacji
@@ -16,4 +15,8 @@ export const getMyBookings = () => {
 // STUDENT / TUTOR — anulowanie
 export const cancelBooking = (id) => {
   return api.patch(`/bookings/${id}/cancel`);
+};
+
+export const cancelManyBookings = (ids) => {
+  return api.patch('/bookings/cancel-many', { ids });
 };

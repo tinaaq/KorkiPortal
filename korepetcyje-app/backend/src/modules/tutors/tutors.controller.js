@@ -1,5 +1,6 @@
 
 import prisma from '../../config/db.js';
+import path from 'path';
 
 // Pobierz profil korepetytora
 export const getTutorProfile = async (req, res) => {
@@ -42,6 +43,14 @@ export const updateTutorProfile = async (req, res) => {
       return res.status(400).json({ error: 'Imię i nazwisko są wymagane' });
     }
 
+    let finalPhotoUrl = photoUrl || null;
+    if (req.file) {
+
+const publicPath = `/uploads/avatars/${req.file.filename}`;
+
+      finalPhotoUrl = publicPath;
+    }
+
     const updatedProfile = await prisma.tutorProfile.update({
       where: { userId: req.user.id},
       data: {
@@ -51,7 +60,7 @@ export const updateTutorProfile = async (req, res) => {
         address: address || null,
         description: description || null,
         meetingLink: meetingLink || null,
-        photoUrl: photoUrl || null,
+        photoUrl: finalPhotoUrl || null,
         mode: mode ? mode.toUpperCase() : undefined
       },
     });
@@ -166,9 +175,6 @@ export const searchTutors = async (req, res) => {
   }
 };
 
-
-// Publiczny profil korepetytora po ID (id = TutorProfile.id)
-// tutors.controller.js
 export const getTutorPublicProfile = async (req, res) => {
   try {
     const { id } = req.params;

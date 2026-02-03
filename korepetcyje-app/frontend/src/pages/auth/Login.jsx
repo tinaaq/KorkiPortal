@@ -1,5 +1,4 @@
 
-// src/pages/auth/Login.jsx
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
@@ -65,10 +64,22 @@ export default function Login() {
   };
 
   return (
-    <>
-      <h2 className="text-xl font-semibold mb-4 text-center">
-        Logowanie
-      </h2>
+<>
+
+      <div className="mb-4">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-1 text-xs md:text-sm text-[#58B09C] hover:underline"
+        >
+          <span className="text-sm">←</span>
+          Wróć na stronę główną
+        </Link>
+      </div>
+
+      <h2 className="text-xl font-semibold text-center mb-1">Logowanie</h2>
+      <p className="text-center text-xs md:text-sm text-base-content/70 mb-4">
+        Zaloguj się, aby przejść do swojego panelu ucznia lub korepetytora.
+      </p>
 
       {error && (
         <div className="alert alert-error mb-4 text-sm">
@@ -77,35 +88,44 @@ export default function Login() {
       )}
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-        <input
-          type="email"
-          placeholder="Email"
-          className="input input-bordered w-full"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
+        <label className="form-control w-full">
+          <span className="label-text text-xs md:text-sm">Email</span>
+          <input
+            type="email"
+            placeholder="np. jan.kowalski@email.com"
+            className="input input-bordered w-full"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            autoComplete="email"
+          />
+        </label>
 
-        <input
-          type="password"
-          placeholder="Hasło"
-          className="input input-bordered w-full"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
+        <label className="form-control w-full">
+          <span className="label-text text-xs md:text-sm">Hasło</span>
+          <input
+            type="password"
+            placeholder="Wpisz hasło"
+            className="input input-bordered w-full"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            autoComplete="current-password"
+          />
+        </label>
 
         <button
-          className="btn btn-primary mt-2"
+          type="submit"
           disabled={loading}
+          className="btn w-full mt-2 rounded-lg bg-[#58B09C] hover:bg-[#4A957F] text-white border-none disabled:opacity-70 disabled:cursor-not-allowed"
         >
-          {loading ? 'Logowanie...' : 'Zaloguj się'}
+          {loading ? "Logowanie..." : "Zaloguj się"}
         </button>
       </form>
 
       <p className="mt-4 text-center text-sm">
-        Nie masz konta?{' '}
-        <Link to="/register" className="link link-primary">
+        Nie masz konta?{" "}
+        <Link to="/register" className="text-[#58B09C] hover:underline">
           Zarejestruj się
         </Link>
       </p>

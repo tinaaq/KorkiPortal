@@ -3,6 +3,7 @@ import {
   createBooking,
   getMyBookings,
   cancelBooking,
+  cancelManyBookings,
 } from './bookings.controller.js';
 
 import { authMiddleware } from '../../middleware/authMiddleware.js';
@@ -30,6 +31,12 @@ router.patch(
   '/:id/cancel',
   authMiddleware,
   cancelBooking
+);
+
+router.patch(
+  '/cancel-many',
+  authMiddleware,
+  cancelManyBookings
 );
 
 export default router;

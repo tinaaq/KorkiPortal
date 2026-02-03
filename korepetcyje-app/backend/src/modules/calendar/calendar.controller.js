@@ -132,6 +132,16 @@ export const getTutorSlots = async (req, res) => {
       },
     });
 
+
+const unavailabilities = await prisma.tutorUnavailability.findMany({
+      where: {
+        tutorId,
+        startAt: { lt: toDate },
+        endAt: { gt: fromDate },
+      },
+    });
+
+
     const slots = [];
 
     for (
@@ -165,7 +175,15 @@ export const getTutorSlots = async (req, res) => {
               b.endAt > slot
           );
 
-          if (!conflict && slotEnd <= endLimit) {
+          
+const conflictUnavailability = unavailabilities.some(
+            (u) =>
+              u.startAt < slotEnd &&
+              u.endAt > slot
+          );
+
+
+          if (!conflict && !conflictUnavailability && slotEnd <= endLimit) {
             slots.push({
               start: slot.toISOString(),
               end: slotEnd.toISOString(),

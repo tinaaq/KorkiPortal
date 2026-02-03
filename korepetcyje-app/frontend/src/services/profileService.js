@@ -1,5 +1,3 @@
-
-// src/services/profileService.js
 import api from './api';
 
 export const getTutorProfile = () => {
@@ -7,8 +5,11 @@ export const getTutorProfile = () => {
 };
 
 export const updateTutorProfile = (data) => {
+ if (typeof FormData !== 'undefined' && data instanceof FormData) {
   return api.put('/tutors/me', data);
-};
+}; 
+  return api.put('/tutors/me', data, { headers: { 'Content-Type': 'application/json' }, })
+}
 
 export const getStudentProfile = () => {
   return api.get('/students/me');
@@ -29,11 +30,21 @@ export const isTutorProfileComplete = (profile) => {
   return hasMode && hasSubjects;
 };
 
+// export const isStudentProfileComplete = (profile) => {
+//   if (!profile) return false;
+
+//   const hasCity = !!profile.city;
+//   const hasGrade = !!profile.grade;
+
+//   return hasCity && hasGrade;
+// };
+
+
 export const isStudentProfileComplete = (profile) => {
   if (!profile) return false;
 
-  const hasCity = !!profile.city;
-  const hasGrade = !!profile.grade;
+  const hasName = !!profile.firstName;
+  const hasSurname = !!profile.lastName;
 
-  return hasCity && hasGrade;
+  return hasName && hasSurname;
 };

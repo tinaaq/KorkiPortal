@@ -58,7 +58,11 @@ export const createBooking = async (req, res) => {
 
     // czy slot pasuje do availability
     const weekday = start.getDay();
-    const hh = start.toISOString().substring(11, 16);
+    
+    const pad = (n) => String(n).padStart(2, '0');
+    const hh = `${pad(start.getHours())}:${pad(start.getMinutes())}`;
+
+    //const hh = start.toISOString().substring(11, 16);
 
     const availability = await prisma.availability.findFirst({
       where: {
@@ -97,7 +101,7 @@ export const createBooking = async (req, res) => {
             finalAddress = tutorProfile.meetingLink || null;
           } else {
             if (!addressOption) {
-              return res.status(400).json({ error: 'Wybierz adres zajęć' });
+             throw new Error('NO_ADDRESS_OPTION');
             }
 
             if (addressOption === 'student') {
@@ -107,11 +111,11 @@ export const createBooking = async (req, res) => {
               finalAddress = tutorProfile.address || null;
               location = 'AT_TUTOR';
             } else {
-              return res.status(400).json({ error: 'Nieprawidłowa opcja adresu' });
+               throw new Error('BAD_ADDRESS_OPTION');  
             }
 
             if (!finalAddress) {
-              return res.status(400).json({ error: 'Brak adresu dla wybranego miejsca zajęć' });
+              throw new Error('NO_ADDRESS_DEFINED');  
             }
           }
 
@@ -176,7 +180,7 @@ export const getMyBookings = async (req, res) => {
                       subjects: { include: { subject: true } },
                     },
                   },
-                  //subject: true,
+                  subject: true,
                 },
                 orderBy: { startAt: 'asc' },
               });
@@ -201,7 +205,7 @@ export const getMyBookings = async (req, res) => {
                   student: {
                     include: { user: true },
                   },
-                  //subject: true,
+                  subject: true,
                 },
                 orderBy: { startAt: 'asc' },
               });
@@ -279,6 +283,82 @@ export const cancelBooking = async (req, res) => {
     res.json(updated);
   } catch (e) {
     console.error(e);
+    res.status(500).json({ error: 'Błąd serwera' });
+  }
+};
+
+export const cancelManyBookings = async (req, res) => {
+  try {
+    const { ids } = req.body;
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ error: 'Brak listy ID bookingów' });
+    }
+
+    const bookings = await prisma.booking.findMany({
+      where: { id: { in: ids } },
+      include: {
+        student: { include: { user: true } },
+        tutor: true,
+      },
+    });
+
+    if (bookings.length === 0) {
+      return res.status(404).json({ error: 'Nie znaleziono rezerwacji' });
+    }
+
+    // Sprawdź dostęp (czy user jest studentem lub tutorem tych zajęć)
+    const userId = req.user.id;
+    const role = req.user.role;
+
+    let allowed = false;
+
+    if (role === 'STUDENT') {
+      const student = await prisma.studentProfile.findUnique({
+        where: { userId },
+      });
+      if (student && bookings.every(b => b.studentId === student.id)) {
+        allowed = true;
+      }
+    }
+
+    if (role === 'TUTOR') {
+      const tutor = await prisma.tutorProfile.findUnique({
+        where: { userId },
+      });
+      if (tutor && bookings.every(b => b.tutorId === tutor.id)) {
+        allowed = true;
+      }
+    }
+
+    if (!allowed) {
+      return res.status(403).json({ error: 'Brak dostępu' });
+    }
+
+    const anyBooking = bookings[0];
+    const studentEmail = anyBooking.student.user.email;
+    const tutorName = anyBooking.tutor.firstName;
+    const startAt = bookings[0].startAt;
+    const endAt = bookings[bookings.length - 1].endAt;
+
+    await prisma.$transaction(async (tx) => {
+      await tx.booking.updateMany({
+        where: { id: { in: ids } },
+        data: { status: 'CANCELLED' },
+      });
+    });
+
+    if (role === 'TUTOR') {
+      sendCancellationEmail(studentEmail, tutorName, startAt, endAt)
+        .catch((e) => console.error('Email error:', e));
+    }
+
+    res.json({
+      success: true,
+      cancelled: ids.length,
+    });
+  } catch (err) {
+    console.error(err);
     res.status(500).json({ error: 'Błąd serwera' });
   }
 };

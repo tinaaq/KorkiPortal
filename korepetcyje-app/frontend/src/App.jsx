@@ -7,6 +7,8 @@ import DashboardLayout from './layouts/DashboardLayout';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 
+import HomePage from './pages/HomePage';
+
 import TutorDashboard from './pages/tutor/TutorDashboard';
 import StudentDashboard from './pages/student/StudentDashboard';
 import NotFound from './pages/NotFound';
@@ -52,6 +54,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
 
+        <Route path="/" element={<HomePage/>} />
         <Route
           path="/login"
           element={
@@ -105,7 +108,7 @@ export default function App() {
         <Route path="/student/tutors" element={<DashboardLayout><StudentTutors /></DashboardLayout>} />
         <Route path="/student/tutors/:id" element={<DashboardLayout><StudentTutorDetails /></DashboardLayout>} />
         <Route path="/student/tutors/:id/book" element={<DashboardLayout><StudentTutorBooking /></DashboardLayout>} />
-        <Route path="/student/calendar" element={<DashboardLayout><StudentCalendar tutorId={1}/></DashboardLayout>} />
+        <Route path="/student/calendar" element={<DashboardLayout><StudentCalendar/></DashboardLayout>} />
         <Route path="/student/flashcards" element={<DashboardLayout><StudentFlashcards /></DashboardLayout>} />
         <Route path="/student/profile" element={<DashboardLayout><StudentProfile /></DashboardLayout>} />
 
