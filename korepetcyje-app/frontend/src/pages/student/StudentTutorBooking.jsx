@@ -270,9 +270,9 @@ return (
                 plugins={[timeGridPlugin, interactionPlugin]}
                               initialView={window.innerWidth < 640 ? 'timeGridDay' : 'timeGridWeek'}
               headerToolbar={{
-                left: window.innerWidth < 640 ? 'prev,next today' : 'prev,next today',
+                left: window.innerWidth < 640 ? 'prev,next' : 'prev,next today',
                 center: 'title',
-                right: window.innerWidth < 640 ? 'timeGridDay' : 'timeGridWeek,timeGridDay',
+                right: window.innerWidth < 640 ? 'today' : 'timeGridWeek,timeGridDay',
               }}
               
               buttonText={{

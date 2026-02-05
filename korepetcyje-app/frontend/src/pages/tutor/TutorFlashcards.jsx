@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import flashcardsService from '../../services/flashcardsService';
 import { getTutorStudents } from '../../services/tutorStudentsService';
 
@@ -338,6 +338,12 @@ function TutorFlashcards() {
     }
   };
 
+  const availableStudents = useMemo(() => {
+    return students.filter(
+      (s) => !assignedStudents.some((a) => a.studentId === s.id)
+    );
+  }, [students, assignedStudents]);
+
   return (
   <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-6">
 
@@ -506,11 +512,11 @@ function TutorFlashcards() {
                 {studentsLoading && <span className="loading loading-spinner loading-xs" />}
               </div>
 
-              {students.length === 0 ? (
-                <span className="text-sm text-[#5D737E]">Nie masz jeszcze żadnych uczniów z rezerwacji.</span>
+              {availableStudents.length === 0 ? (
+                <span className="text-sm text-[#5D737E]">Brak uczniów do przypisania.</span>
               ) : (
                 <div className="max-h-40 overflow-y-auto rounded-md border border-[#E5E5E5] dark:border-[#3F4045] p-2 flex flex-col gap-2">
-                  {students.map((s) => {
+                  {availableStudents.map((s) => {
                     const label = `${s.firstName} ${s.lastName}${s.grade ? ` • klasa ${s.grade}` : ''}${s.city ? ` • ${s.city}` : ''}`;
                     const checked = selectedStudentIds.includes(s.id);
                     return (

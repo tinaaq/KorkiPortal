@@ -101,16 +101,11 @@ export default function StudentCalendar() {
 
               initialView={window.innerWidth < 640 ? 'timeGridDay' : 'timeGridWeek'}
               headerToolbar={{
-                left: window.innerWidth < 640 ? 'prev,next' : '',
-                center: '',
-                right: window.innerWidth < 640 ? 'today timeGridDay' : '',
+                left: window.innerWidth < 640 ? 'prev,next' : 'prev,next today',
+                center: 'title',
+                right: window.innerWidth < 640 ? 'today' : 'timeGridWeek,timeGridDay',
               }}
 
-                footerToolbar={{
-                left: '',
-                center: 'title',
-                right: '',
-              }}
 
               buttonText={{
                 today: 'Dziś',

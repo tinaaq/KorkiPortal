@@ -112,7 +112,7 @@ function buildGroupedBookingEvents(bookings) {
 
   if (currentGroup) groups.push(currentGroup);
 
-  // Zamień grupy na eventy FullCalendar
+ 
   return groups.map((g, index) => {
     const allCancelled = g.statuses.every((s) => s === 'CANCELLED');
     const anyConfirmed = g.statuses.some((s) => s === 'CONFIRMED');
@@ -411,13 +411,13 @@ export default function TutorCalendar() {
     
           <div className="-mx-5 sm:mx-0 rounded-none sm:rounded-lg border-t border-b sm:border border-[#E5E5E5] dark:border-[#3F4045] overflow-hidden">
             <FullCalendar
-              plugins={[timeGridPlugin, interactionPlugin /* + dayGridPlugin (wymagane dla widoku miesiąca) */]}
+              plugins={[timeGridPlugin, interactionPlugin]}
 
               initialView={window.innerWidth < 640 ? 'timeGridDay' : 'timeGridWeek'}
               headerToolbar={{
-                left: window.innerWidth < 640 ? 'prev,next today' : 'prev,next today',
+                left: window.innerWidth < 640 ? 'prev,next ' : 'prev,next today',
                 center: 'title',
-                right: window.innerWidth < 640 ? 'timeGridDay' : 'timeGridWeek,timeGridDay',
+                right: window.innerWidth < 640 ? 'today' : 'timeGridWeek,timeGridDay',
               }}
 
               buttonText={{
