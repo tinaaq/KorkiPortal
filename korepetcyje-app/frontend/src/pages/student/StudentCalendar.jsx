@@ -30,7 +30,7 @@ export default function StudentCalendar() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedSession, setSelectedSession] = useState(null); // jedna scalona lekcja
+  const [selectedSession, setSelectedSession] = useState(null);
 
   const loadBookings = async () => {
     setLoading(true);
@@ -72,65 +72,77 @@ export default function StudentCalendar() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto relative">
-      <h1 className="text-2xl font-semibold mb-2">Moje zajęcia</h1>
-      <p className="mb-4 text-sm opacity-80">
-        Kalendarz Twoich zarezerwowanych zajęć.
-      </p>
+  <div className="max-w-6xl mx-auto relative px-2">
+    <h1 className="text-2xl font-semibold mb-2">Moje zajęcia</h1>
 
-      {error && (
-        <div className="alert alert-error mb-3 text-sm">
-          {error}
-        </div>
-      )}
+    <p className="mb-4 text-sm sm:text-base opacity-80">
+      Kalendarz Twoich zarezerwowanych zajęć.
+    </p>
 
-      <div className="card bg-base-100 shadow-sm mb-4">
-        <div className="card-body">
-          {loading ? (
-            <div className="flex justify-center items-center h-64">
-              <span className="loading loading-spinner loading-lg" />
-            </div>
-          ) : (
-            <>
-              <div className="border rounded-lg overflow-hidden">
-                <FullCalendar
-                  plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+    {error && (
+      <div className="alert alert-error mb-3 text-sm">
+        {error}
+      </div>
+    )}
+
+    <div className="card bg-base-100 shadow-sm mb-4 w-full">
+      <div className="card-body sm:card-body p-0 sm:p-4">
+
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <span className="loading loading-spinner loading-lg" />
+          </div>
+        ) : (
+          <>
+            <div className="border rounded-lg overflow-hidden">
+
+            <FullCalendar
+              plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+
               initialView={window.innerWidth < 640 ? 'timeGridDay' : 'timeGridWeek'}
               headerToolbar={{
-                left: window.innerWidth < 640 ? 'prev,next today' : 'prev,next today',
-                center: 'title',
-                right: window.innerWidth < 640 ? 'timeGridDay' : 'timeGridWeek,timeGridDay',
+                left: window.innerWidth < 640 ? 'prev,next' : '',
+                center: '',
+                right: window.innerWidth < 640 ? 'today timeGridDay' : '',
               }}
-              
+
+                footerToolbar={{
+                left: '',
+                center: 'title',
+                right: '',
+              }}
+
               buttonText={{
                 today: 'Dziś',
                 week: 'Tydzień',
                 day: 'Dzień',
               }}
-                  allDaySlot={false}
-                  slotMinTime="07:00:00"
-                  slotMaxTime="22:00:00"
-                  height="auto"
-                  locale="pl"
-                  firstDay={1}
-                  selectable={false}
-                  editable={false}
-                  events={events}
-                  eventClick={handleEventClick}
-                />
-              </div>
-            </>
-          )}
-        </div>
-      </div>
 
-      <SessionDetailsModal
-        session={selectedSession}
-        onClose={() => setSelectedSession(null)}
-        onCancelled={loadBookings}
-      />
+              allDaySlot={false}
+              slotMinTime="07:00:00"
+              slotMaxTime="22:00:00"
+              height="auto"
+              locale="pl"
+              firstDay={1}
+              selectable={false}
+              editable={false}
+              events={events}
+              eventClick={handleEventClick}
+            />
+            </div>
+          </>
+        )}
+      </div>
     </div>
-  );
+
+    <SessionDetailsModal
+      session={selectedSession}
+      onClose={() => setSelectedSession(null)}
+      onCancelled={loadBookings}
+    />
+  </div>
+);
+
 }
 
 function groupBookingsIntoSessions(bookings) {

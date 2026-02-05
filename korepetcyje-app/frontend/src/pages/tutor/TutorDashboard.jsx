@@ -65,49 +65,83 @@ export default function TutorDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
    
-        <div className="lg:col-span-2 space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      
-            <button
-              type="button"
-              onClick={() => navigate('/tutor/students')}
-              className="card bg-base-100 shadow-sm text-left hover:shadow-md transition-shadow"
-            >
-              <div className="card-body">
-                <h2 className="card-title text-lg">Lista uczniów</h2>
-                <p className="text-sm opacity-70">
-                  Przejdź do listy uczniów, zobacz notatki i przypisz fiszki.
-                </p>
-              </div>
-            </button>
+              {/* Moi uczniowie */}
+        <div className="card rounded-lg border border-[#E5E5E5] dark:border-[#3F4045]
+                        bg-[#FCFCFC] dark:bg-[#1A232B]
+                        shadow-[0_1px_2px_rgba(0,0,0,0.06)]
+                        hover:shadow-[0_4px_12px_rgba(0,0,0,0.10)]
+                        transition-shadow">
+          <div className="card-body p-5 flex flex-col gap-2">
+            <h2 className="text-lg font-semibold text-[#02111B] dark:text-[#F2F6FA]">
+              Moi uczniowie
+            </h2>
+            <p className="text-sm text-[#5D737E]">
+              Lista uczniów, notatki oraz przypisane fiszki.
+            </p>
+            <div className="pt-2 mt-auto">
+              <button
+                onClick={() => navigate('/tutor/students')}
+                className="btn h-10 w-full md:w-auto rounded-md px-4
+                          bg-[#58B09C] hover:bg-[#4FA893]
+                          text-white focus:outline-none focus:ring-2 focus:ring-[#58B09C]"
+              >
+                Otwórz listę
+              </button>
+            </div>
+          </div>
+        </div>
 
-        
-            <button
-              type="button"
-              onClick={() => navigate('/tutor/calendar')}
-              className="card bg-base-100 shadow-sm text-left hover:shadow-md transition-shadow"
-            >
-              <div className="card-body">
-                <h2 className="card-title text-lg">Kalendarz</h2>
-                <p className="text-sm opacity-70">
-                  Zarządzaj swoją dostępnością i nadchodzącymi zajęciami.
-                </p>
-              </div>
-            </button>
+        {/* Kalendarz */}
+        <div className="card rounded-lg border border-[#E5E5E5] dark:border-[#3F4045]
+                        bg-[#FCFCFC] dark:bg-[#1A232B]
+                        shadow-[0_1px_2px_rgba(0,0,0,0.06)]
+                        hover:shadow-[0_4px_12px_rgba(0,0,0,0.10)]
+                        transition-shadow">
+          <div className="card-body p-5 flex flex-col gap-2">
+            <h2 className="text-lg font-semibold text-[#02111B] dark:text-[#F2F6FA]">
+              Kalendarz
+            </h2>
+            <p className="text-sm text-[#5D737E]">
+              Zarządzaj dostępnością i zaplanowanymi zajęciami.
+            </p>
+            <div className="pt-2 mt-auto">
+              <button
+                onClick={() => navigate('/tutor/calendar')}
+                className="btn h-10 w-full md:w-auto rounded-md px-4
+                          bg-transparent border border-[#E5E5E5] dark:border-[#3F4045]
+                          text-[#02111B] dark:text-[#F2F6FA]
+                          hover:bg-[#F2F2F2] dark:hover:bg-[#161D24]
+                          focus:outline-none focus:ring-2 focus:ring-[#58B09C]"
+              >
+                Przejdź do kalendarza
+              </button>
+            </div>
+          </div>
+        </div>
 
-       
-            <button
-              type="button"
-              onClick={() => navigate('/tutor/flashcards')}
-              className="card bg-base-100 shadow-sm text-left hover:shadow-md transition-shadow"
-            >
-              <div className="card-body">
-                <h2 className="card-title text-lg">Fiszki</h2>
-                <p className="text-sm opacity-70">
-                  Twórz zestawy fiszek i przypisuj je uczniom.
-                </p>
-              </div>
-            </button>
+        {/* Fiszki */}
+        <div className="card rounded-lg border border-[#E5E5E5] dark:border-[#3F4045]
+                        bg-[#FCFCFC] dark:bg-[#1A232B]
+                        shadow-[0_1px_2px_rgba(0,0,0,0.06)]
+                        hover:shadow-[0_4px_12px_rgba(0,0,0,0.10)]
+                        transition-shadow">
+          <div className="card-body p-5 flex flex-col gap-2">
+            <h2 className="text-lg font-semibold text-[#02111B] dark:text-[#F2F6FA]">
+              Fiszki
+            </h2>
+            <p className="text-sm text-[#5D737E]">
+              Twórz zestawy fiszek i przypisuj je uczniom.
+            </p>
+            <div className="pt-2 mt-auto">
+              <button
+                onClick={() => navigate('/tutor/flashcards')}
+                className="btn h-10 w-full md:w-auto rounded-md px-4
+                          bg-[#5D737E] hover:bg-[#4C5E68]
+                          text-white focus:outline-none focus:ring-2 focus:ring-[#58B09C]"
+              >
+                Otwórz fiszki
+              </button>
+            </div>
           </div>
         </div>
 
