@@ -25,7 +25,7 @@ import StudentCalendar from './pages/student/StudentCalendar';
 import StudentFlashcards from './pages/student/StudentFlashcards';
 import StudentProfile from './pages/student/StudentProfile';
 
-
+import TutorProfileGuard from './components/tutorProfileGuard';
 import './App.css'
 
 
@@ -83,16 +83,18 @@ export default function App() {
           path="/tutor"
           element={
             <ProtectedRoute>
-              <DashboardLayout>
-                <TutorDashboard />
-              </DashboardLayout>
+              <TutorProfileGuard>
+                  <DashboardLayout>
+                    <TutorDashboard />
+                  </DashboardLayout>
+              </TutorProfileGuard>
             </ProtectedRoute>
           }
         />
         <Route path="/tutor/profile" element={<DashboardLayout><TutorProfile /></DashboardLayout>} />
-        <Route path="/tutor/calendar" element={<DashboardLayout><TutorCalendar /></DashboardLayout>} />
-        <Route path="/tutor/students" element={<DashboardLayout><TutorStudents /></DashboardLayout>} />
-        <Route path="/tutor/flashcards" element={<DashboardLayout><TutorFlashcards /></DashboardLayout>} />
+        <Route path="/tutor/calendar" element={<TutorProfileGuard><DashboardLayout><TutorCalendar /></DashboardLayout></TutorProfileGuard>} />
+        <Route path="/tutor/students" element={<TutorProfileGuard><DashboardLayout><TutorStudents /></DashboardLayout></TutorProfileGuard>} />
+        <Route path="/tutor/flashcards" element={<TutorProfileGuard><DashboardLayout><TutorFlashcards /></DashboardLayout></TutorProfileGuard>} />
 
         {/* STUDENT */}
         <Route
